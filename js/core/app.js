@@ -1,34 +1,33 @@
 // js/app.js — Phase 5
 
-import { supabase }                          from '/utils/supabase.js';
+import { supabase } from '../utils/supabase.js';
 import { checkAuthState, signInWithGoogle, signOut } from './shared/auth.js';
 import {
     renderHeader, showPage, toast, closeModal,
     hideImageLightbox, updateIcons, switchFormTab,
     showTableLoading, showPanelLoading
 } from './ui.js';
-import { renderDashboard }                   from './dashboard.js';
+import { renderDashboard } from '../dashboard.js';
 import { fetchAuditLogs, renderAuditLog }    from './shared/audit.js';
 import {
-    fetchWorkOrders, renderWorkOrdersTable,
-    initWorkOrderEventListeners, initFilterEventListeners,
-    cancelEdit, handleModalConfirm, updateNextIdLabel, getActiveWorkOrders
-} from './workorders.js';
+    fetchWorkOrders,
+    renderWorkOrdersTable
+} from '../modules/workorders.js';
 import { initRealtime }                      from './shared/realtime.js';
 import { initPurchaseEventListeners }        from './modules/purchase.js';
 import {
-    fetchAssets, renderAssetOptions, renderAssetList, initAssetEventListeners
-} from './assets.js';
+    fetchAssets
+} from '../modules/assets.js';
 import {
-    fetchMaintenanceSchedules, renderMaintenancePanel, initMaintenanceEventListeners
-} from './maintenance.js';
+    fetchMaintenanceSchedules
+} from '../modules/maintenance.js';
 import { renderAnalytics }                   from './analytics/analytics.js';
 import { exportWorkOrdersToCSV }             from './utils/export.js';
 import { initUserManagementEventListeners }  from './modules/users.js';
 import { fetchOutlets, populateAllOutletSelects } from './utils/outlets.js';
 import {
-    fetchEngineeringRequests, renderERList, initEngineeringRequestsEventListeners
-} from './engineering-requests.js';
+    fetchEngineeringRequests
+} from '../modules/engineering-requests.js';
 import { initCommentsEventListeners }        from './core/comments.js';
 import { initNotificationBell }              from './shared/notifications-ui.js';
 import { initReports, initReportEventListeners } from './analytics/reports.js';
@@ -41,7 +40,7 @@ import {
 import {
     fetchDailyUpdates, renderDailyUpdatesGrid, initDailyUpdatesEventListeners // 5.3
 } from './modules/daily-updates.js';
-import { initErrorBoundary }                 from './error-boundary.js'; // 5.8
+import { initErrorBoundary }                 from './core/error-boundary.js'; // 5.8
 
 let appInitialized = false;
 
