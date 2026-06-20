@@ -1,8 +1,8 @@
 // js/realtime.js
 
 import { supabase }                          from '../utils/supabase.js';
-import { renderDashboard }                   from './dashboard.js';
-import { fetchAuditLogs, renderAuditLog }    from '../shared/audit.js';
+import { renderDashboard } from '../dashboard.js';
+import { renderDashboard } from '../dashboard.js';
 import { fetchWorkOrders, renderWorkOrdersTable } from '../modules/workorders.js';
 import { toast }                             from '../core/ui.js';
 import { pushNotification }                  from '../shared/notifications-ui.js'; // 3.6

@@ -3,7 +3,7 @@
 import { supabase }                    from '../utils/supabase.js';
 import { toast, emptyStateHTML }       from '../core/ui.js';
 import { formatIDR, formatIDRCompact, escapeHtml } from '../utils/utils.js';
-import { renderDashboard }             from './dashboard.js';
+import { renderDashboard } from '../dashboard.js';
 import { getActiveWorkOrders }         from '../modules/workorders.js';
 import { getOutlets }                  from '../utils/outlets.js';
 

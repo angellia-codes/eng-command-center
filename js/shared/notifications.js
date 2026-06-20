@@ -1,6 +1,6 @@
 // js/notifications.js
 
-import { toast } from './ui.js';
+import { toast } from '../core/ui.js';
 import { formatIDR, formatTargetDate, hoursBetween } from '../utils/utils.js';
 
 /**
