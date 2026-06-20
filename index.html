@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nourish Group Indonesia — Engineering Command Center</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<!-- 5.8: Error Boundary Overlay -->
+<div id="error-overlay" class="error-overlay">
+  <div class="error-card">
+    <div class="error-card-head">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="error-card-title">Something Went Wrong</div>
+    </div>
+    <div class="error-card-body">
+      <p class="error-message" id="error-overlay-message">An unexpected error occurred. The page may not work correctly.</p>
+      <pre class="error-detail" id="error-overlay-detail"></pre>
+      <div class="error-actions">
+        <button class="btn-mcancel" id="btn-error-dismiss">Dismiss</button>
+        <button class="btn-mconfirm" id="btn-error-reload">Reload Page</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="img-lb" class="img-lb" style="display:none;"><img id="img-lb-src" src="" alt="WO Photo"></div>
+
+<!-- Action Modal -->
+<div id="action-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head"><div class="modal-title" id="m-title"></div><div class="modal-sub" id="m-sub"></div></div>
+    <div class="modal-body" id="m-body"></div>
+    <div class="modal-foot"><button class="btn-mcancel" id="m-btn-cancel">Cancel</button><button class="btn-mconfirm" id="m-btn-confirm">Confirm</button></div>
+  </div>
+</div>
+
+<!-- Comments Modal -->
+<div id="comments-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box" style="width:540px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal-head" style="flex-shrink:0;"><div class="modal-title">Work Order Notes</div><div class="modal-sub" id="comments-modal-sub"></div></div>
+    <div class="comments-list" id="comments-list" style="flex:1;overflow-y:auto;"></div>
+    <div style="padding:14px 20px;border-top:1px solid #F1EDE6;flex-shrink:0;">
+      <textarea class="fctl" id="comment-input" rows="2" placeholder="Add a note… (Ctrl+Enter to post)"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;gap:8px;">
+        <button type="button" class="btn-mcancel" id="btn-close-comments">Close</button>
+        <button type="button" class="btn-mconfirm" id="btn-post-comment">Post Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Asset Modal -->
+<div id="asset-modal" class="modal-ov" style="display:none;">
+  <form id="asset-form" class="modal-box" style="width:500px;">
+    <div class="modal-head"><div class="modal-title" id="asset-modal-title">Register New Asset</div><div class="modal-sub">Add equipment to the company registry.</div></div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Asset Code</label><input type="text" class="fctl" name="asset_code" placeholder="e.g., K-CK-001"></div>
+        <div class="fgrp"><label class="flbl">Status</label><select class="fctl" name="status"><option>Operational</option><option>Under Repair</option><option>In Maintenance</option><option>Decommissioned</option></select></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" name="outlet" required><option value="">Select outlet...</option></select></div>
+        <div class="fgrp"><label class="flbl">Category *</label><select class="fctl" name="category" required><option value="">Select category...</option><option>Civil</option><option>Kitchen/Hot Line</option><option>Bar/Espresso Machine</option><option>Chiller/Cold Storage</option><option>HVAC/AC</option><option>Electrical</option><option>Plumbing</option><option>Other</option></select></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Brand</label><input type="text" class="fctl" name="brand"></div>
+        <div class="fgrp"><label class="flbl">Model</label><input type="text" class="fctl" name="model"></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Serial Number</label><input type="text" class="fctl" name="serial_number"></div>
+        <div class="fgrp"><label class="flbl">Installation Date</label><input type="date" class="fctl" name="installation_date"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-mcancel" id="btn-decommission-asset" style="display:none;background:#FEF2F2;color:#991B1B;border-color:#FECACA;">Decommission</button>
+      <button type="button" class="btn-mcancel" id="btn-cancel-asset-modal">Cancel</button>
+      <button type="submit" class="btn-mconfirm">Save Asset</button>
+    </div>
+  </form>
+</div>
+
+<!-- PM Modal -->
+<div id="pm-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box" style="width:460px;">
+    <div class="modal-head"><div class="modal-title" id="pm-modal-title">Schedule PM Task</div><div class="modal-sub">Add a recurring maintenance schedule for an asset.</div></div>
+    <div class="modal-body">
+      <div class="fgrp"><label class="flbl">Asset *</label><select class="fctl" id="pm-asset-id" name="asset_id" required><option value="">Select asset...</option></select></div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Frequency *</label><select class="fctl" id="pm-frequency" name="frequency" required><option value="">Select...</option><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option><option>Semi Annual</option><option>Annual</option></select></div>
+        <div class="fgrp"><label class="flbl">Next Service Date *</label><input type="date" class="fctl" id="pm-next-date" name="next_date" required></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-pm-modal">Cancel</button><button type="submit" form="pm-form" class="btn-mconfirm" id="btn-submit-pm">Save Schedule</button></div>
+    <form id="pm-form" style="display:none;"></form>
+  </div>
+</div>
+
+<!-- Engineering Request Modal -->
+<div id="er-modal" class="modal-ov" style="display:none;">
+  <form id="er-form" class="modal-box" style="width:520px;">
+    <div class="modal-head"><div class="modal-title">Submit Engineering Request</div><div class="modal-sub">Report an issue or request engineering work.</div></div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" id="er-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
+        <div class="fgrp"><label class="flbl">Department</label><input type="text" class="fctl" id="er-dept" name="department" placeholder="e.g. F&amp;B Service..."></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Location / Area</label><input type="text" class="fctl" id="er-location" name="location" placeholder="e.g. Kitchen Hood..."></div>
+      <div class="fgrp"><label class="flbl">Priority *</label><select class="fctl" id="er-priority" name="priority" required><option value="">Select...</option><option value="Low">Low — Can wait</option><option value="Medium">Medium — This week</option><option value="High">High — Today</option><option value="Emergency">Emergency — Immediate</option></select></div>
+      <div class="fgrp"><label class="flbl">Description *</label><textarea class="fctl" id="er-description" name="description" rows="4" placeholder="Describe the issue in detail..." required></textarea></div>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-er-modal">Cancel</button><button type="submit" class="btn-mconfirm">Submit Request</button></div>
+  </form>
+</div>
+
+<!-- 5.1: Add/Edit Part Modal -->
+<div id="part-modal" class="modal-ov" style="display:none;">
+  <form id="part-form" class="modal-box" style="width:500px;">
+    <div class="modal-head"><div class="modal-title" id="part-modal-title">Register New Part</div><div class="modal-sub">Add a spare part to the inventory.</div></div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Part Code</label><input type="text" class="fctl" name="part_code" placeholder="e.g., EL-001"></div>
+        <div class="fgrp"><label class="flbl">Category</label><select class="fctl" name="category"><option value="">Select...</option><option>Mechanical</option><option>Electrical</option><option>Plumbing</option><option>HVAC</option><option>Kitchen Equipment</option><option>Civil</option><option>Other</option></select></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Part Name *</label><input type="text" class="fctl" name="name" placeholder="e.g., Contactor 3 Phase 20A" required></div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" name="unit" placeholder="pcs" value="pcs"></div>
+        <div class="fgrp"><label class="flbl">Outlet / Warehouse</label><select class="fctl" name="outlet"><option value="">General Store</option></select></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Minimum Stock</label><input type="number" class="fctl" name="min_stock" placeholder="0" min="0" value="0"></div>
+        <div class="fgrp"><label class="flbl">Current Stock</label><input type="number" class="fctl" name="current_stock" placeholder="0" min="0" value="0"></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Location in Store</label><input type="text" class="fctl" name="location" placeholder="e.g., Shelf A-3, Cabinet 2"></div>
+      <div class="fgrp"><label class="flbl">Notes</label><textarea class="fctl" name="notes" rows="2" placeholder="Supplier, spec notes..."></textarea></div>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-part-modal">Cancel</button><button type="submit" class="btn-mconfirm">Save Part</button></div>
+  </form>
+</div>
+
+<!-- 5.1: Stock In/Out Modal -->
+<div id="stock-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head"><div class="modal-title" id="stock-modal-title">Stock In</div><div class="modal-sub" id="stock-modal-sub"></div></div>
+    <form id="stock-form" class="modal-body">
+      <div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" name="qty" placeholder="0" min="1" required></div>
+      <div class="stock-max-hint" id="stock-max-hint"></div>
+      <div class="fgrp" style="margin-top:10px;"><label class="flbl">Reference (WO#, PO#, or Reason)</label><input type="text" class="fctl" name="reference" placeholder="e.g., WO-0012 or Monthly restock"></div>
+    </form>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-stock-modal">Cancel</button><button type="submit" form="stock-form" class="btn-mconfirm">Confirm</button></div>
+  </div>
+</div>
+
+<!-- 5.1: Part Movement History Modal -->
+<div id="part-history-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box" style="width:520px;">
+    <div class="modal-head"><div class="modal-title" id="history-modal-title">Movement History</div></div>
+    <div class="modal-body" style="padding:0;max-height:50vh;overflow-y:auto;" id="history-body"></div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-close-history-modal">Close</button></div>
+  </div>
+</div>
+
+<!-- 5.2: Vendor Modal -->
+<div id="vendor-modal" class="modal-ov" style="display:none;">
+  <form id="vendor-form" class="modal-box" style="width:560px;">
+    <div class="modal-head"><div class="modal-title" id="vendor-modal-title">Add Vendor</div><div class="modal-sub">Register a supplier or service contractor.</div></div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Vendor Name *</label><input type="text" class="fctl" name="name" required placeholder="e.g., PT Sejahtera Teknik"></div>
+        <div class="fgrp"><label class="flbl">Category</label><select class="fctl" name="category"><option value="">Select...</option></select></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Contact Person</label><input type="text" class="fctl" name="contact_person" placeholder="Name"></div>
+        <div class="fgrp"><label class="flbl">Phone / WhatsApp</label><input type="text" class="fctl" name="phone" placeholder="+62..."></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Email</label><input type="email" class="fctl" name="email" placeholder="vendor@email.com"></div>
+        <div class="fgrp"><label class="flbl">Performance Rating</label><select class="fctl" name="performance_rating"><option value="">Not rated</option><option value="5">★★★★★ Excellent</option><option value="4">★★★★☆ Good</option><option value="3">★★★☆☆ Average</option><option value="2">★★☆☆☆ Below Average</option><option value="1">★☆☆☆☆ Poor</option></select></div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Contract Start</label><input type="date" class="fctl" name="contract_start"></div>
+        <div class="fgrp"><label class="flbl">Contract End</label><input type="date" class="fctl" name="contract_end"></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Address</label><textarea class="fctl" name="address" rows="2" placeholder="Vendor address..."></textarea></div>
+      <div class="fgrp"><label class="flbl">Notes</label><textarea class="fctl" name="notes" rows="2" placeholder="Any additional notes..."></textarea></div>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-vendor-modal">Cancel</button><button type="submit" class="btn-mconfirm">Save Vendor</button></div>
+  </form>
+</div>
+
+<!-- 5.3: Daily Update Form Modal -->
+<div id="daily-update-modal" class="modal-ov" style="display:none;">
+  <form id="daily-update-form" class="modal-box" style="width:540px;">
+    <div class="modal-head"><div class="modal-title" id="daily-update-modal-title">Submit Daily Update</div><div class="modal-sub">End-of-day engineering report for your outlet.</div></div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" name="outlet" required><option value="">Select outlet...</option></select></div>
+        <div class="fgrp"><label class="flbl">Engineer on Duty *</label><input type="text" class="fctl" name="engineer_name" placeholder="Your name" required></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Issues Found</label><textarea class="fctl" name="issues_found" rows="2" placeholder="Any new issues or faults discovered today..."></textarea></div>
+      <div class="fgrp"><label class="flbl">Work Completed</label><textarea class="fctl" name="work_completed" rows="2" placeholder="Tasks finished today..."></textarea></div>
+      <div class="fgrp"><label class="flbl">Ongoing Projects</label><textarea class="fctl" name="ongoing_projects" rows="2" placeholder="Work still in progress..."></textarea></div>
+      <div class="fgrp">
+        <label class="flbl">Pending Items / Carryover</label>
+        <textarea class="fctl" name="pending_items" rows="2" placeholder="Items not yet resolved..."></textarea>
+        <div class="pending-carryover-hint">⚠️ Pre-filled from yesterday's pending items</div>
+      </div>
+      <div class="fgrp"><label class="flbl">Target Completion Date</label><input type="date" class="fctl" name="target_completion"></div>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-daily-update">Cancel</button><button type="submit" class="btn-mconfirm">Submit Update</button></div>
+  </form>
+</div>
+
+<!-- User Management Modal -->
+<div id="users-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box" style="width:700px;max-width:95vw;">
+    <div class="modal-head"><div class="modal-title">User Management</div><div class="modal-sub">View and manage user roles and access.</div></div>
+    <div class="modal-body" style="padding:0;"><div class="table-wrapper" style="max-height:50vh;"><table class="wo-table"><thead><tr><th>Name</th><th>Email</th><th>Outlet</th><th>Role</th><th>Status</th></tr></thead><tbody id="users-tbody"></tbody></table></div></div>
+    <div class="modal-foot"><button class="btn-mcancel" id="btn-close-users-modal">Close</button></div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="page-login" class="login-bg" style="display:flex;">
+  <div class="login-card">
+    <div class="login-card-head">
+      <div style="position:relative;z-index:1;">
+        <div style="display:flex;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;"><rect width="56" height="56" rx="14" fill="rgba(255,255,255,0.1)"/><path d="M28 8C28 8 14 19 14 30C14 37.7 20.3 44 28 44C35.7 44 42 37.7 42 30C42 19 28 8 28 8Z" fill="rgba(255,255,255,0.88)"/><path d="M28 16C28 16 20 24 20 31C20 34.3 23.6 37 28 38" fill="rgba(45,90,69,0.45)"/><line x1="28" y1="44" x2="28" y2="27" stroke="rgba(45,90,69,0.65)" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:white;text-align:center;letter-spacing:0.05em;line-height:1.2;">NOURISH GROUP INDONESIA</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.55);text-align:center;letter-spacing:0.16em;text-transform:uppercase;margin-top:5px;font-weight:600;">Engineering Command Center</div>
+      </div>
+    </div>
+    <div class="login-separator"></div>
+    <div class="login-body">
+      <div id="login-error" class="info-callout" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;margin-bottom:12px;display:none;"></div>
+      <button class="google-btn" id="google-login-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0;"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.98 1 12 1 7.35 1 3.4 3.65 1.5 7.5l3.6 2.8C6.01 7.22 8.78 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.6 2.8c2.1-1.94 3.31-4.8 3.31-8.46z"/><path fill="#FBBC05" d="M5.1 14.7c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.5 7.3C.54 9.22 0 11.35 0 13.6s.54 4.38 1.5 6.3l3.6-2.9z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.93l-3.6-2.8c-1.1.74-2.52 1.18-4.36 1.18-3.22 0-5.99-2.18-6.9-5.26l-3.6 2.8C3.4 20.35 7.35 23 12 23z"/></svg>
+        <span>Sign in with Google</span>
+      </button>
+      <div style="text-align:center;font-size:11.5px;color:#9CA3AF;margin-top:16px;">PT Nourish Group Indonesia · Bali</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="page-app" style="display:none;">
+  <header class="ng-header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:38px;height:38px;flex-shrink:0;"><rect width="42" height="42" rx="10" fill="rgba(255,255,255,0.1)"/><path d="M21 7C21 7 10 15.5 10 24C10 29.8 15 34.5 21 34.5C27 34.5 32 29.8 32 24C32 15.5 21 7 21 7Z" fill="rgba(255,255,255,0.88)"/><path d="M21 13C21 13 14.5 19.5 14.5 25C14.5 27.5 17.5 29.5 21 30" fill="rgba(43,88,64,0.45)"/><line x1="21" y1="34.5" x2="21" y2="21" stroke="rgba(43,88,64,0.65)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div><div style="font-family:'Playfair Display',serif;font-size:15.5px;font-weight:700;color:white;letter-spacing:0.05em;line-height:1.2;">NOURISH GROUP INDONESIA</div><div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.15em;text-transform:uppercase;font-weight:600;margin-top:1px;">Engineering Command Center</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+        <div class="header-pill"><span class="live-dot"></span><span style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;" id="h-active-tickets">—</span></div>
+        <div class="header-pill" style="gap:8px;"><i data-lucide="user" style="width:13px;height:13px;color:rgba(255,255,255,0.55);flex-shrink:0;"></i><div><div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;line-height:1.2;" id="h-user-name">—</div><div style="font-size:9.5px;color:rgba(255,255,255,0.42);line-height:1;text-transform:capitalize;" id="h-user-role">—</div></div></div>
+        <div class="notif-bell-wrap"><button class="logout-btn notif-bell-btn" id="notif-bell" title="Notifications"><i data-lucide="bell" style="width:14px;height:14px;"></i><span id="notif-badge" class="notif-badge" style="display:none;">0</span></button><div id="notif-dropdown" class="notif-dropdown" style="display:none;"></div></div>
+        <button class="logout-btn" id="manage-users-btn" style="display:none;background:rgba(61,122,94,0.25);color:#A7F3D0;border-color:rgba(61,122,94,0.3);">Manage Users</button>
+        <button class="logout-btn" id="logout-btn">Logout</button>
+        <div style="text-align:right;"><div style="font-size:12px;color:rgba(255,255,255,0.78);font-weight:500;" id="h-date"></div><div style="font-size:9.5px;color:rgba(255,255,255,0.38);letter-spacing:0.05em;">Bali, Indonesia</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-wrap">
+
+    <!-- KPI outlet filter -->
+    <div class="dash-header-row"><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B7280;">KPI View:</span><span id="dash-outlet-ctx" style="font-size:12px;font-weight:600;color:var(--ng-green);">All Outlets</span></div><select id="dash-outlet-filter" class="filter-select" style="font-size:12px;padding:4px 24px 4px 8px;"><option value="">All Outlets</option></select></div>
+
+    <div class="dashboard-grid" id="dash-grid"></div>
+
+    <!-- Overview Charts -->
+    <div class="analytics-grid">
+      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Monthly Work Orders</span></div><div class="chart-container"><canvas id="monthlyWoChart"></canvas></div></div>
+      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Status Breakdown</span></div><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Cost by Outlet</span></div><div class="chart-container"><canvas id="costChart"></canvas></div></div>
+    </div>
+
+    <!-- 5.3: Daily Engineering Updates -->
+    <div class="panel">
+      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span class="panel-title">Daily Engineering Updates</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" id="daily-update-date" class="report-date-input">
+          <button class="btn-accept" id="btn-submit-daily-update" style="font-size:12px;">+ Submit Update</button>
+        </div>
+      </div>
+      <div id="daily-updates-grid" class="daily-updates-grid"><div class="loading-state"><span class="spinner"></span>Loading daily updates…</div></div>
+    </div>
+
+    <!-- Asset Hub -->
+    <div class="asset-hub-grid">
+      <div class="panel">
+        <div class="panel-head" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span class="panel-title">Preventive Maintenance</span>
+          <div style="display:flex;gap:6px;align-items:center;"><div class="pm-view-toggle"><button class="pm-view-btn active" id="btn-pm-due">Due Now</button><button class="pm-view-btn" id="btn-pm-calendar">Schedule</button></div><button class="btn-accept" id="btn-show-pm-modal" style="font-size:11.5px;">+ Add</button></div>
+        </div>
+        <div class="pm-list" id="pm-list-container"><div class="loading-state"><span class="spinner"></span>Loading…</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Asset Registry</span><button class="btn-accept" id="btn-show-asset-modal" style="font-size:12px;">+ Register Asset</button></div>
+        <div class="asset-list" id="asset-list-container"><div class="loading-state"><span class="spinner"></span>Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- Engineering Requests -->
+    <div class="panel">
+      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Engineering Requests</span><button class="btn-accept" id="btn-new-er" style="font-size:12px;">+ Submit Request</button></div>
+      <div class="table-wrapper" style="max-height:280px;"><table class="wo-table"><thead><tr><th style="width:90px;">Request #</th><th style="width:140px;">Outlet / Dept</th><th>Description</th><th style="width:90px;">Priority</th><th style="width:120px;">Status</th><th style="width:150px;">Actions</th></tr></thead><tbody id="er-tbody"><tr><td colspan="6" class="loading-cell"><span class="spinner"></span>Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- 5.1: Inventory & Spare Parts -->
+    <div class="panel">
+      <div class="inventory-alert" id="inventory-alert"></div>
+      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span class="panel-title">Inventory &amp; Spare Parts</span>
+        <button class="btn-accept" id="btn-show-add-part" style="font-size:12px;">+ Add Part</button>
+      </div>
+      <div class="table-wrapper" style="max-height:320px;" id="inventory-tbody-wrap">
+        <table class="wo-table" id="inventory-table">
+          <thead><tr><th style="width:80px;">Code</th><th>Name</th><th style="width:100px;">Category</th><th style="width:110px;">Outlet</th><th style="width:80px;text-align:center;">Stock</th><th style="width:60px;text-align:center;">Min</th><th style="width:90px;">Status</th><th style="width:160px;">Actions</th></tr></thead>
+          <tbody id="inventory-tbody"><tr><td colspan="8" class="loading-cell"><span class="spinner"></span>Loading inventory…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace-grid">
+      <div class="panel">
+        <div class="panel-head" style="padding:0;"><div style="padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title" id="form-panel-title">Log Work Order</span><span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#9CA3AF;" id="next-id-lbl"></span></div></div>
+        <div class="tab-nav"><button class="tab-btn active" id="tab-wo">Work Order</button><button class="tab-btn" id="tab-po">Purchase Request</button></div>
+        <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;" id="wo-form" class="form-content">
+          <input type="hidden" id="wo-id-input" value=""><input type="hidden" id="wo-schedule-id" name="schedule_id" value="">
+          <div class="fgrp"><label class="flbl" for="f-outlet">Outlet *</label><select class="fctl" id="f-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
+          <div class="fgrp"><label class="flbl" for="f-asset-select">Select Registered Asset</label><select class="fctl" id="f-asset-select" name="asset_id"><option value="">Select a registered asset...</option></select><div style="font-size:11px;text-align:right;color:#888;margin-top:4px;">or describe below</div></div>
+          <div class="fgrp"><label class="flbl">Non-Registered Asset / Task</label><input type="text" class="fctl" id="f-asset-other" name="asset_other" placeholder="e.g., Leaking Pipe, Wall Repair..."></div>
+          <div class="fgrp"><label class="flbl" for="f-type">WO Type *</label><select class="fctl" id="f-type" name="type" required><option value="">Select type...</option><option value="Corrective">Corrective Maintenance</option><option value="Preventive">Preventive Maintenance</option><option value="Emergency">Emergency</option><option value="Project">Project Work</option></select></div>
+          <div class="fcols">
+            <div class="fgrp"><label class="flbl" for="f-priority">Priority *</label><select class="fctl" id="f-priority" name="priority" required><option value="">Select...</option><option>Low</option><option>Medium</option><option>High</option><option>Emergency</option></select></div>
+            <div class="fgrp"><label class="flbl" for="f-by">Reported By *</label><input type="text" class="fctl" id="f-by" name="created_by" placeholder="Your name" required></div>
+          </div>
+          <div class="fgrp"><label class="flbl" for="f-desc">Description / Scope *</label><textarea class="fctl" id="f-desc" name="description" placeholder="Describe the issue..." required></textarea></div>
+          <hr style="border:none;border-top:1px solid #F1EDE6;margin:11px 0;">
+          <div class="fgrp"><label class="flbl">Attach Photo</label><div style="display:flex;gap:8px;align-items:center;"><button type="button" class="btn-media" id="btn-camera">📸 Take Photo</button><button type="button" class="btn-media" id="btn-gallery">📁 Gallery</button><div id="form-prev" style="display:none;flex-shrink:0;"><img id="form-thumb" class="form-thumb" src="" alt="Preview"></div></div><input type="file" id="inp-camera" accept="image/*" capture="environment" style="display:none;"><input type="file" id="inp-gallery" accept="image/*" style="display:none;"></div>
+          <div style="display:flex;gap:10px;margin-top:15px;"><button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none;">Cancel Edit</button><button type="submit" class="btn-primary" id="btn-submit"><i data-lucide="send" style="width:14px;height:14px;" id="submit-icon"></i><span id="submit-text">Submit Work Order</span></button></div>
+        </form>
+        <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;display:none;" id="pr-form" class="form-content">
+          <div class="fgrp"><label class="flbl" for="pr-outlet">Outlet *</label><select class="fctl" id="pr-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
+          <div class="fgrp"><label class="flbl">Item / Material Name *</label><input type="text" class="fctl" id="po-item" name="item_name" placeholder="e.g. Contactor 3 Phase..." required></div>
+          <div class="fcols"><div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" id="po-qty" name="qty" placeholder="0" min="1" required></div><div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" id="po-unit" name="unit" placeholder="e.g. Pcs, Kg, Roll..."></div></div>
+          <div class="fgrp"><label class="flbl">Est. Total Cost (IDR) *</label><input type="number" class="fctl" id="po-cost" name="estimated_cost" placeholder="0" min="0" required></div>
+          <div class="fgrp"><label class="flbl">Justification / Linked WO</label><textarea class="fctl" id="po-desc" name="justification" placeholder="Reason for purchase or related WO number..."></textarea></div>
+          <div style="margin-top:15px;"><button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--ng-amber),var(--ng-amber-light));color:#FFF;box-shadow:0 4px 14px rgba(200,136,42,0.32);"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i><span>Send Purchase Request</span></button></div>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head" style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;"><span class="panel-title">Active Work Orders</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div style="display:flex;gap:5px;flex-wrap:wrap;" id="status-counts"></div><button class="btn-generate-wo" id="btn-export-csv"><i data-lucide="download" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>Export CSV</button></div></div>
+        <div class="filter-bar" id="wo-filter-bar">
+          <div class="filter-search"><svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="filter-search" placeholder="Search WO ID, description, asset…" autocomplete="off"></div>
+          <select id="filter-outlet" class="filter-select"><option value="">All Outlets</option></select>
+          <select id="filter-status" class="filter-select"><option value="">All Statuses</option><option>Pending</option><option>In Progress</option><option>Waiting for Parts</option><option>Completed</option></select>
+          <select id="filter-priority" class="filter-select"><option value="">All Priorities</option><option>Emergency</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <button id="filter-clear" class="btn-filter-clear">✕ Clear</button>
+          <span id="filter-count" class="filter-count"></span>
+        </div>
+        <div class="table-wrapper">
+          <table class="wo-table"><thead><tr><th style="width:98px;">WO / Outlet</th><th style="width:100px;">Asset · Type</th><th>Description</th><th style="width:120px;" class="col-timeline">Timeline</th><th style="width:90px;" class="col-cost">Cost / Target</th><th style="width:48px;" class="col-photo">Photo</th><th style="width:135px;">Status · Action</th></tr></thead>
+          <tbody id="wo-tbody"><tr><td colspan="7" class="loading-cell"><span class="spinner"></span>Loading…</td></tr></tbody></table>
+        </div>
+        <!-- 5.6: Load more -->
+        <div id="wo-load-more"></div>
+      </div>
+    </div>
+
+    <!-- 5.2: Vendor Management -->
+    <div class="panel">
+      <div class="vendor-alert" id="vendor-alert"></div>
+      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Vendor Management</span><button class="btn-accept" id="btn-show-add-vendor" style="font-size:12px;">+ Add Vendor</button></div>
+      <div class="table-wrapper" style="max-height:280px;"><table class="wo-table"><thead><tr><th>Vendor</th><th style="width:110px;">Category</th><th style="width:140px;">Contact</th><th style="width:120px;">Contract End</th><th style="width:100px;">Rating</th><th style="width:70px;">Status</th><th style="width:160px;">Actions</th></tr></thead><tbody id="vendors-tbody"><tr><td colspan="7" class="loading-cell"><span class="spinner"></span>Loading vendors…</td></tr></tbody></table></div>
+    </div>
+
+    <!-- Reports Section -->
+    <div class="panel reports-panel" id="reports-section">
+      <div class="pdf-only" style="display:none;"><div id="pdf-report-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#1B3A2D;margin-bottom:4px;"></div><div id="pdf-report-date" style="font-size:13px;color:#6B7280;"></div><div id="pdf-report-range" style="font-size:13px;color:#6B7280;margin-bottom:16px;"></div></div>
+      <div class="panel-head reports-head">
+        <button id="btn-toggle-reports" class="reports-toggle-btn"><i data-lucide="bar-chart-2" style="width:15px;height:15px;color:var(--ng-green);"></i><span class="panel-title" style="font-size:15px;">Reports &amp; Analytics</span><span id="report-range-label" class="report-range-chip">All Time</span><i data-lucide="chevron-down" id="reports-chevron" style="width:15px;height:15px;color:#9CA3AF;transition:transform 0.2s;"></i></button>
+        <div class="reports-controls"><div class="date-preset-bar"><button class="date-preset-btn" data-preset="7d">7D</button><button class="date-preset-btn" data-preset="30d">30D</button><button class="date-preset-btn" data-preset="3m">3M</button><button class="date-preset-btn" data-preset="6m">6M</button><button class="date-preset-btn" data-preset="1y">1Y</button><button class="date-preset-btn active" data-preset="all">All</button></div><input type="date" id="report-date-from" class="report-date-input" title="From date"><input type="date" id="report-date-to" class="report-date-input" title="To date"><button class="btn-accept" id="btn-export-pdf" style="font-size:12px;white-space:nowrap;">📄 Export PDF</button></div>
+      </div>
+      <div id="reports-body" style="display:none;">
+        <div class="report-tabs-bar"><button class="report-tab-btn active" data-tab="aging">📊 WO Aging</button><button class="report-tab-btn" data-tab="financial">💰 Financial</button><button class="report-tab-btn" data-tab="compliance">✅ PM Compliance</button><button class="report-tab-btn" data-tab="mtbf">🔧 MTBF</button></div>
+        <div id="report-aging" class="report-content"><div id="aging-summary" class="report-stat-row"></div><div class="report-two-col"><div><div class="report-section-title">Open Tickets by Age</div><div class="chart-container" style="height:220px;"><canvas id="report-aging-chart"></canvas></div></div><div><div class="report-section-title">Oldest Open Tickets</div><div id="aging-table"></div></div></div></div>
+        <div id="report-financial" class="report-content" style="display:none;"><div id="fin-summary" class="report-stat-row"></div><div class="report-four-col"><div><div class="report-section-title">Cost by Outlet</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-outlet-chart"></canvas></div></div><div><div class="report-section-title">Cost by Category</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-category-chart"></canvas></div></div><div><div class="report-section-title">Monthly Spend Trend</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-trend-chart"></canvas></div></div><div><div class="report-section-title">Top Assets by Cost</div><div id="fin-asset-table"></div></div></div></div>
+        <div id="report-compliance" class="report-content" style="display:none;"><div id="compliance-content"></div></div>
+        <div id="report-mtbf" class="report-content" style="display:none;"><div id="mtbf-content"></div></div>
+      </div>
+    </div>
+
+    <!-- Audit Log -->
+    <div class="audit-panel">
+      <div class="audit-topbar"><div class="tdot" style="background:#FF5F57;"></div><div class="tdot" style="background:#FFBD2E;"></div><div class="tdot" style="background:#28CA41;"></div><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.42);margin-left:8px;">nourish.eng / audit_trail.log</span><span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(255,255,255,0.26);" id="audit-ct">0 events</span></div>
+      <div class="audit-body" id="audit-body"></div>
+    </div>
+
+  </div><!-- end main-wrap -->
+</div><!-- end page-app -->
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
