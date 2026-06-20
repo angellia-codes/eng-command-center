@@ -13,21 +13,28 @@ import {
     fetchWorkOrders, renderWorkOrdersTable,
     initWorkOrderEventListeners, initFilterEventListeners,
     cancelEdit, handleModalConfirm, updateNextIdLabel, getActiveWorkOrders
-} from '../workorders.js';
+} from '../modules/workorders.js';
 import { initRealtime }                      from '../shared/realtime.js';
 import { initPurchaseEventListeners }        from '../modules/purchase.js';
 import {
-    fetchAssets
+    fetchAssets,
+    renderAssetOptions,
+    renderAssetList,
+    initAssetEventListeners
 } from '../modules/assets.js';
 import {
-    fetchMaintenanceSchedules
+    fetchMaintenanceSchedules,
+    renderMaintenancePanel,
+    initMaintenanceEventListeners
 } from '../modules/maintenance.js';
 import { renderAnalytics }                   from '../analytics/analytics.js';
 import { exportWorkOrdersToCSV }             from '../utils/export.js';
 import { initUserManagementEventListeners }  from '../modules/users.js';
 import { fetchOutlets, populateAllOutletSelects } from '../utils/outlets.js';
 import {
-    fetchEngineeringRequests
+    fetchEngineeringRequests,
+    renderERList,
+    initEngineeringRequestsEventListeners
 } from '../modules/engineering-requests.js';
 import { initCommentsEventListeners }        from '../core/comments.js';
 import { initNotificationBell }              from '../shared/notifications-ui.js';
