@@ -10,9 +10,10 @@ import {
 import { renderDashboard } from '../dashboard.js';
 import { fetchAuditLogs, renderAuditLog }    from '../shared/audit.js';
 import {
-    fetchWorkOrders,
-    renderWorkOrdersTable
-} from '../modules/workorders.js';
+    fetchWorkOrders, renderWorkOrdersTable,
+    initWorkOrderEventListeners, initFilterEventListeners,
+    cancelEdit, handleModalConfirm, updateNextIdLabel, getActiveWorkOrders
+} from '../workorders.js';
 import { initRealtime }                      from '../shared/realtime.js';
 import { initPurchaseEventListeners }        from '../modules/purchase.js';
 import {
