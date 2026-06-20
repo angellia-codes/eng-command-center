@@ -4,7 +4,7 @@ import { supabase } from '../utils/supabase.js';
 import { getCurrentUserProfile } from '../shared/auth.js';
 import { addAuditLog } from '../shared/audit.js';
 import { toast, switchFormTab } from '../core/ui.js';
-import { populateWoForm } from '.modules/workorders.js';
+import { populateWoForm } from './workorders.js';
 import { escapeHtml } from '../utils/utils.js';
 import { populateOutletSelect } from '../utils/outlets.js';
 
