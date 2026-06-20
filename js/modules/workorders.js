@@ -3,7 +3,7 @@
 import {
     sendWhatsAppNotification, formatNewWoMessage,
     formatAcceptedWoMessage, formatCompletedWoMessage
-from '../shared/notifications.js'
+} from '../shared/notifications.js'
 import { supabase }                    from '../utils/supabase.js';
 import { getCurrentUserProfile }       from '../shared/auth.js';
 import { addAuditLog }                 from '../shared/audit.js';
