@@ -1,12 +1,12 @@
 // js/engineering-requests.js
 
-import { supabase } from './utils/supabase.js';
-import { getCurrentUserProfile } from './shared/auth.js';
-import { addAuditLog } from './shared/audit.js';
-import { toast, switchFormTab } from './core/ui.js';
+import { supabase } from '../utils/supabase.js';
+import { getCurrentUserProfile } from '../shared/auth.js';
+import { addAuditLog } from '../shared/audit.js';
+import { toast, switchFormTab } from '../core/ui.js';
 import { populateWoForm } from '.modules/workorders.js';
-import { escapeHtml } from './utils/utils.js';
-import { populateOutletSelect } from './utils/outlets.js';
+import { escapeHtml } from '../utils/utils.js';
+import { populateOutletSelect } from '../utils/outlets.js';
 
 /**
  * @file Engineering Requests module — Phase 2 (2.6).

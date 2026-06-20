@@ -1,6 +1,6 @@
 // js/notifications-ui.js
 
-import { escapeHtml } from './utils/utils.js';
+import { escapeHtml } from '../utils/utils.js';
 
 /**
  * @file In-app notification bell — Phase 3 (3.6).

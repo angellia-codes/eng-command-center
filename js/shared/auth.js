@@ -1,7 +1,7 @@
 // js/auth.js
 
-import { supabase } from './utils/supabase.js';
-import { toast, showLoginError } from './core/ui.js';
+import { supabase } from '../utils/supabase.js';
+import { toast, showLoginError } from '../core/ui.js';
 
 let currentUserProfile = null;
 

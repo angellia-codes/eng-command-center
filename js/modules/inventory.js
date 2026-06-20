@@ -1,10 +1,10 @@
 // js/inventory.js
 
-import { supabase }                     from './utils/supabase.js';
-import { getCurrentUserProfile, hasPermission } from './shared/auth.js';
-import { addAuditLog }                  from './shared/audit.js';
-import { toast, showPanelLoading, emptyStateHTML } from './core/ui.js';
-import { escapeHtml, formatIDR }        from './utils/utils.js';
+import { supabase }                     from '../utils/supabase.js';
+import { getCurrentUserProfile, hasPermission } from '../shared/auth.js';
+import { addAuditLog }                  from '../shared/audit.js';
+import { toast, showPanelLoading, emptyStateHTML } from '../core/ui.js';
+import { escapeHtml, formatIDR }        from '../utils/utils.js';
 
 /**
  * @file Inventory / Spare Parts module — Phase 5 (5.1).

@@ -1,10 +1,10 @@
 // js/comments.js
 
-import { supabase } from './utils/supabase.js';
-import { getCurrentUserProfile } from './shared/auth.js';
-import { addAuditLog } from './shared/audit.js';
-import { toast } from './core/ui.js';
-import { escapeHtml } from './utils/utils.js';
+import { supabase } from '../utils/supabase.js';
+import { getCurrentUserProfile } from '../shared/auth.js';
+import { addAuditLog } from '../shared/audit.js';
+import { toast } from '../core/ui.js';
+import { escapeHtml } from '../utils/utils.js';
 
 /**
  * @file Work Order Comments / Notes module — Phase 3 (3.7).

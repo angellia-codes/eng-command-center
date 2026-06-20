@@ -1,11 +1,11 @@
 // js/purchase.js
 
-import { supabase } from './utils/supabase.js';
-import { getCurrentUserProfile } from './shared/auth.js';
-import { addAuditLog } from './shared/audit.js';
-import { toast } from './core/ui.js';
-import { sendWhatsAppNotification, formatNewPrMessage } from './shared/notifications.js';
-import { FONNTE_TARGET_PR } from './shared/config.js';
+import { supabase } from '../utils/supabase.js';
+import { getCurrentUserProfile } from '../shared/auth.js';
+import { addAuditLog } from '../shared/audit.js';
+import { toast } from '../core/ui.js';
+import { sendWhatsAppNotification, formatNewPrMessage } from '../shared/notifications.js';
+import { FONNTE_TARGET_PR } from '../shared/config.js';
 
 // ✅ FIX 1: Lazy getter — resolved at call time, not module load
 function getForm() { return document.getElementById('pr-form'); }

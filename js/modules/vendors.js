@@ -1,10 +1,10 @@
 // js/vendors.js
 
-import { supabase }                          from './utils/supabase.js';
-import { getCurrentUserProfile, hasPermission } from './shared/auth.js';
-import { addAuditLog }                       from './shared/audit.js';
-import { toast, emptyStateHTML }             from './core/ui.js';
-import { escapeHtml }                        from './utils/utils.js';
+import { supabase }                          from '../utils/supabase.js';
+import { getCurrentUserProfile, hasPermission } from '../shared/auth.js';
+import { addAuditLog }                       from '../shared/audit.js';
+import { toast, emptyStateHTML }             from '../core/ui.js';
+import { escapeHtml }                        from '../utils/utils.js';
 
 /**
  * @file Vendor Management module — Phase 5 (5.2).

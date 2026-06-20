@@ -4,17 +4,17 @@ import {
     sendWhatsAppNotification, formatNewWoMessage,
     formatAcceptedWoMessage, formatCompletedWoMessage
 } from './notifications.js';
-import { supabase }                    from './utils/supabase.js';
-import { getCurrentUserProfile }       from './shared/auth.js';
-import { addAuditLog }                 from './shared/audit.js';
+import { supabase }                    from '../utils/supabase.js';
+import { getCurrentUserProfile }       from '../shared/auth.js';
+import { addAuditLog }                 from '../shared/audit.js';
 import {
     toast, showModal, closeModal, showImageLightbox,
     showTableLoading, emptyTableRow
-} from './core/ui.js';
-import { formatDateShort, formatIDR, formatTargetDate, escapeHtml } from './utils/utils.js';
-import { FONNTE_TARGET_WO }            from './utils/config.js';
-import { openCommentsModal }           from './core/comments.js';
-import { getOutlets }                  from './utils/outlets.js';
+} from '../core/ui.js';
+import { formatDateShort, formatIDR, formatTargetDate, escapeHtml } from '../utils/utils.js';
+import { FONNTE_TARGET_WO }            from '../utils/config.js';
+import { openCommentsModal }           from '../core/comments.js';
+import { getOutlets }                  from '../utils/outlets.js';
 
 /**
  * Phase 1 fixes + Phase 2 + Phase 3 features, all retained.

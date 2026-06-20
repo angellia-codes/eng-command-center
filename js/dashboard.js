@@ -1,7 +1,7 @@
 // js/dashboard.js
 
-import { updateIcons } from './core/ui.js';
-import { formatIDR, formatIDRCompact, hoursBetween, escapeHtml } from './utils/utils.js'; // FIX 1.9: added escapeHtml
+import { updateIcons } from '../core/ui.js';
+import { formatIDR, formatIDRCompact, hoursBetween, escapeHtml } from '../utils/utils.js'; // FIX 1.9: added escapeHtml
 
 /**
  * @file Manages the rendering of dashboard metrics.

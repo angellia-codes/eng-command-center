@@ -1,6 +1,6 @@
 // js/outlets.js
 
-import { supabase } from './utils/supabase.js';
+import { supabase } from '../utils/supabase.js';
 
 /**
  * @file Single source of truth for outlet names.

@@ -1,7 +1,7 @@
 // js/analytics.js
 
-import { supabase } from './utils/supabase.js';
-import { toast } from './core/ui.js';
+import { supabase } from '../utils/supabase.js';
+import { toast } from '../core/ui.js';
 
 /**
  * @file Manages fetching analytics data and rendering charts.

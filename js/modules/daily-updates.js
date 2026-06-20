@@ -1,12 +1,12 @@
 // js/daily-updates.js
 
-import { supabase }                     from './utils/supabase.js';
-import { getCurrentUserProfile }        from './shared/auth.js';
-import { addAuditLog }                  from './shared/audit.js';
-import { toast, emptyStateHTML }        from './core/ui.js';
-import { escapeHtml }                   from './utils/utils.js';
-import { getOutlets }                   from './utils/outlets.js';
-import { populateOutletSelect }         from './utils/outlets.js';
+import { supabase }                     from '../utils/supabase.js';
+import { getCurrentUserProfile }        from '../shared/auth.js';
+import { addAuditLog }                  from '../shared/audit.js';
+import { toast, emptyStateHTML }        from '../core/ui.js';
+import { escapeHtml }                   from '../utils/utils.js';
+import { getOutlets }                   from '../utils/outlets.js';
+import { populateOutletSelect }         from '../utils/outlets.js';
 
 /**
  * @file Daily Engineering Updates module — Phase 5 (5.3).

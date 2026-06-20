@@ -1,12 +1,12 @@
 // js/maintenance.js
 
-import { supabase }                          from './utils/supabase.js';
-import { toast, switchFormTab, showPanelLoading, emptyStateHTML } from './core/ui.js';
-import { populateWoForm }                    from './modules/workorders.js';
-import { addAuditLog }                       from './shared/audit.js';
-import { getCurrentUserProfile, hasPermission } from './shared/auth.js';
-import { getAssets }                         from './modules/assets.js';
-import { escapeHtml }                        from './utils/utils.js';
+import { supabase }                          from '../utils/supabase.js';
+import { toast, switchFormTab, showPanelLoading, emptyStateHTML } from '../core/ui.js';
+import { populateWoForm }                    from '../modules/workorders.js';
+import { addAuditLog }                       from '../shared/audit.js';
+import { getCurrentUserProfile, hasPermission } from '../shared/auth.js';
+import { getAssets }                         from '../modules/assets.js';
+import { escapeHtml }                        from '../utils/utils.js';
 
 /**
  * @file Preventive Maintenance module.

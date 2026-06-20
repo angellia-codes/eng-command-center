@@ -1,12 +1,12 @@
 // js/assets.js
 
-import { supabase } from './utils/supabase.js';
-import { toast } from './core/ui.js';
-import { addAuditLog } from './shared/audit.js';
-import { escapeHtml } from './utils/utils.js';
-import { hasPermission } from './sharaed/auth.js';
-import { getCurrentUserProfile } from './shared/auth.js';
-import { populateOutletSelect } from './utils/outlets.js';
+import { supabase } from '../utils/supabase.js';
+import { toast } from '../core/ui.js';
+import { addAuditLog } from '../shared/audit.js';
+import { escapeHtml } from '../utils/utils.js';
+import { hasPermission } from '../shared/auth.js';
+import { getCurrentUserProfile } from '../shared/auth.js';
+import { populateOutletSelect } from '../utils/outlets.js';
 
 /**
  * @file Manages Asset Registry data and UI.

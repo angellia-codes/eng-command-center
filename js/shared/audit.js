@@ -1,8 +1,8 @@
 // js/audit.js
 
-import { supabase } from './utils/supabase.js';
-import { getCurrentUserProfile } from './shared/auth.js';
-import { formatAuditTimestamp, escapeHtml } from './utils/utils.js'; // FIX 1.9: added escapeHtml
+import { supabase } from '../utils/supabase.js';
+import { getCurrentUserProfile } from '../shared/auth.js';
+import { formatAuditTimestamp, escapeHtml } from '../utils/utils.js'; // FIX 1.9: added escapeHtml
 
 /**
  * @file Manages fetching, rendering, and creating audit log entries.

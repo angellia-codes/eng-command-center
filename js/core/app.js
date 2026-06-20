@@ -1,46 +1,46 @@
 // js/app.js — Phase 5
 
 import { supabase } from '../utils/supabase.js';
-import { checkAuthState, signInWithGoogle, signOut } from './shared/auth.js';
+import { checkAuthState, signInWithGoogle, signOut } from '../shared/auth.js';
 import {
     renderHeader, showPage, toast, closeModal,
     hideImageLightbox, updateIcons, switchFormTab,
     showTableLoading, showPanelLoading
 } from './ui.js';
 import { renderDashboard } from '../dashboard.js';
-import { fetchAuditLogs, renderAuditLog }    from './shared/audit.js';
+import { fetchAuditLogs, renderAuditLog }    from '../shared/audit.js';
 import {
     fetchWorkOrders,
     renderWorkOrdersTable
 } from '../modules/workorders.js';
-import { initRealtime }                      from './shared/realtime.js';
-import { initPurchaseEventListeners }        from './modules/purchase.js';
+import { initRealtime }                      from '../shared/realtime.js';
+import { initPurchaseEventListeners }        from '../modules/purchase.js';
 import {
     fetchAssets
 } from '../modules/assets.js';
 import {
     fetchMaintenanceSchedules
 } from '../modules/maintenance.js';
-import { renderAnalytics }                   from './analytics/analytics.js';
-import { exportWorkOrdersToCSV }             from './utils/export.js';
-import { initUserManagementEventListeners }  from './modules/users.js';
-import { fetchOutlets, populateAllOutletSelects } from './utils/outlets.js';
+import { renderAnalytics }                   from '../analytics/analytics.js';
+import { exportWorkOrdersToCSV }             from '../utils/export.js';
+import { initUserManagementEventListeners }  from '../modules/users.js';
+import { fetchOutlets, populateAllOutletSelects } from '../utils/outlets.js';
 import {
     fetchEngineeringRequests
 } from '../modules/engineering-requests.js';
-import { initCommentsEventListeners }        from './core/comments.js';
-import { initNotificationBell }              from './shared/notifications-ui.js';
-import { initReports, initReportEventListeners } from './analytics/reports.js';
+import { initCommentsEventListeners }        from '../core/comments.js';
+import { initNotificationBell }              from '../shared/notifications-ui.js';
+import { initReports, initReportEventListeners } from '../analytics/reports.js';
 import {
     fetchInventory, renderInventoryList, initInventoryEventListeners  // 5.1
-} from './modules/inventory.js';
+} from '../modules/inventory.js';
 import {
     fetchVendors, renderVendorList, initVendorEventListeners          // 5.2
-} from './modules/vendors.js';
+} from '../modules/vendors.js';
 import {
     fetchDailyUpdates, renderDailyUpdatesGrid, initDailyUpdatesEventListeners // 5.3
-} from './modules/daily-updates.js';
-import { initErrorBoundary }                 from './core/error-boundary.js'; // 5.8
+} from '../modules/daily-updates.js';
+import { initErrorBoundary }                 from '../core/error-boundary.js'; // 5.8
 
 let appInitialized = false;
 

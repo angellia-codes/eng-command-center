@@ -1,7 +1,7 @@
 // js/notifications.js
 
 import { toast } from './ui.js';
-import { formatIDR, formatTargetDate, hoursBetween } from './utils/utils.js';
+import { formatIDR, formatTargetDate, hoursBetween } from '../utils/utils.js';
 
 /**
  * @file Manages sending WhatsApp notifications.

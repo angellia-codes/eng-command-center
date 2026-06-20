@@ -1,7 +1,7 @@
 // js/users.js
 
-import { supabase } from './utils/supabase.js';
-import { toast } from './core/ui.js';
+import { supabase } from '../utils/supabase.js';
+import { toast } from '../core/ui.js';
 
 // ✅ FIX 1: Lazy DOM queries — resolved at call time, not module load time
 function getModal() { return document.getElementById('users-modal'); }
