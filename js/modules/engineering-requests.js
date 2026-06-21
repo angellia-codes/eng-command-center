@@ -115,8 +115,10 @@ export function renderERList(requests) {
                     ${er.location ? `<div style="font-size:10.5px;color:#9CA3AF;">${escapeHtml(er.location)}</div>` : ''}
                 </td>
                 <td title="${escapeHtml(rawDesc)}">
-                    <div style="font-size:12px;color:#374151;line-height:1.4;">
-                     ${desc}
+                     <div style="font-size:12px;color:#374151;line-height:1.4;">
+                    ${desc}
+                </div>
+                </td>
                 </div>
                 <td><div style="font-size:12px;color:#374151;line-height:1.4;">${desc}</div></td>
                 <td><span class="badge ${PRIORITY_CLASS[er.priority] || 'bp-low'}">${escapeHtml(er.priority)}</span></td>
@@ -152,34 +154,83 @@ export function closeERModal() {
 async function handleERFormSubmit(e) {
     e.preventDefault();
 
+    const form = e.target;
+    const editId = form.dataset.editId;
     const user = getCurrentUserProfile();
-    if (!user) { toast('Session expired. Please log in again.', 'err'); return; }
 
-    const submitBtn = e.target.querySelector('[type="submit"]');
+    if (!user) {
+        toast('Session expired. Please log in again.', 'err');
+        return;
+    }
+
+    const submitBtn = form.querySelector('[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
 
     try {
-        const formData = new FormData(e.target);
-        const d        = Object.fromEntries(formData.entries());
+        const formData = new FormData(form);
+        const d = Object.fromEntries(formData.entries());
 
         if (!d.outlet || !d.description || !d.priority) {
             toast('Outlet, priority, and description are required.', 'err');
             return;
         }
 
+        // EDIT MODE
+        if (editId) {
+            const { error } = await supabase
+                .from('engineering_requests')
+                .update({
+                    outlet: d.outlet,
+                    department: d.department || null,
+                    location: d.location || null,
+                    description: d.description,
+                    priority: d.priority
+                })
+                .eq('id', editId);
+
+            if (error) {
+                toast(error.message, 'err');
+                return;
+            }
+
+            addAuditLog(
+                `${editId} edited by ${user.full_name}.`,
+                'edit'
+            );
+
+            toast(`✓ ${editId} updated successfully`, 'ok');
+
+            delete form.dataset.editId;
+
+            const submitBtn = form.querySelector('[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Submit Request';
+            }
+
+            closeERModal();
+
+            const fresh = await fetchEngineeringRequests();
+            renderERList(fresh);
+
+            return;
+        }
+
+        // CREATE MODE
         const record = {
-            id:          await getNextERId(),
-            outlet:      d.outlet,
-            department:  d.department  || null,
-            location:    d.location    || null,
+            id: await getNextERId(),
+            outlet: d.outlet,
+            department: d.department || null,
+            location: d.location || null,
             description: d.description,
-            priority:    d.priority,
-            status:      'Pending',
-            created_by:  user.full_name,
-            user_id:     user.id,
+            priority: d.priority,
+            status: 'Pending',
+            created_by: user.full_name,
+            user_id: user.id
         };
 
-        const { error } = await supabase.from('engineering_requests').insert(record);
+        const { error } = await supabase
+            .from('engineering_requests')
+            .insert(record);
 
         if (error) {
             toast(`Error submitting request: ${error.message}`, 'err');
@@ -187,10 +238,12 @@ async function handleERFormSubmit(e) {
         }
 
         toast(`✓ ${record.id} submitted successfully`, 'ok');
+
         addAuditLog(
             `${record.id} — Engineering request submitted by ${user.full_name}. Outlet: ${record.outlet}. Priority: ${record.priority}.`,
             'create'
         );
+
         closeERModal();
 
         const fresh = await fetchEngineeringRequests();
@@ -200,7 +253,6 @@ async function handleERFormSubmit(e) {
         if (submitBtn) submitBtn.disabled = false;
     }
 }
-
 /**
  * Converts an ER to a WO by pre-populating the WO form and
  * updating the ER status to 'Converted to WO'.
@@ -244,7 +296,7 @@ async function convertERtoWO(erId) {
 async function closeER(erId) {
     const user = getCurrentUserProfile();
 
-    if (!['admin', 'manager'].includes(user.role)) {
+    if (!user || !['admin', 'manager'].includes(user.role)) {
         toast('Permission denied', 'err');
         return;
     }
@@ -253,34 +305,51 @@ async function closeER(erId) {
         .from('engineering_requests')
         .update({ status: 'Closed' })
         .eq('id', erId);
-        return;
-    }
-    if (error) { toast(`Error closing ER: ${error.message}`, 'err'); return; }
-    toast(`${erId} closed.`, 'ok');
-    addAuditLog(`${erId} closed by ${user.full_name}.`, 'status');
-    const fresh = await fetchEngineeringRequests();
-    renderERList(fresh);
-
-async function editER(erId) {
-     const editId = e.target.dataset.editId;
-    if (editId) 
-    const { error } = await supabase
-        .from('engineering_requests')
-        .update({
-            outlet: d.outlet,
-            department: d.department || null,
-            location: d.location || null,
-            description: d.description,
-            priority: d.priority
-        })
-        .eq('id', editId);
 
     if (error) {
-        toast(error.message, 'err');
+        toast(`Error closing ER: ${error.message}`, 'err');
         return;
     }
-    toast(`${editId} updated successfully`, 'ok');
+
+    toast(`${erId} closed.`, 'ok');
+    addAuditLog(`${erId} closed by ${user.full_name}.`, 'status');
+
+    const fresh = await fetchEngineeringRequests();
+    renderERList(fresh);
+}
+
+async function editER(erId) {
+    const user = getCurrentUserProfile();
+
+    if (!user || user.role !== 'admin') {
+        toast('Only administrators can edit engineering requests.', 'err');
+        return;
     }
+
+    const er = erCache.find(r => r.id === erId);
+
+    if (!er) {
+        toast('Engineering request not found.', 'err');
+        return;
+    }
+
+    openERModal();
+
+    document.getElementById('er-outlet').value = er.outlet || '';
+    document.getElementById('er-dept').value = er.department || '';
+    document.getElementById('er-location').value = er.location || '';
+    document.getElementById('er-priority').value = er.priority || '';
+    document.getElementById('er-description').value = er.description || '';
+
+    // Store edit ID on form
+    const form = document.getElementById('er-form');
+    form.dataset.editId = erId;
+
+    const submitBtn = form.querySelector('[type="submit"]');
+    if (submitBtn) {
+        submitBtn.textContent = 'Update Request';
+    }
+}
 
 async function deleteER(erId) {
     const user = getCurrentUserProfile();
@@ -339,7 +408,7 @@ export function initEngineeringRequestsEventListeners() {
     if (erForm) {
         erForm.addEventListener('submit', handleERFormSubmit);
     }
-    
+
     if (erTbody) {
         erTbody.addEventListener('click', e => {
             const erId = e.target.dataset.erId;
