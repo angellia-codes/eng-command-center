@@ -3,6 +3,9 @@
 import { toast } from '../core/ui.js';
 import { formatIDR, formatTargetDate, hoursBetween } from '../utils/utils.js';
 
+// Default Engineering WhatsApp Group
+const DEFAULT_WA_GROUP = '120363231248225311@g.us';
+
 /**
  * @file Manages sending WhatsApp notifications.
  *
@@ -20,40 +23,37 @@ import { formatIDR, formatTargetDate, hoursBetween } from '../utils/utils.js';
  * @param {string} target  - The target WhatsApp group or number ID.
  * @returns {Promise<{ok: boolean}>}
  */
-export async function sendWhatsAppNotification(message, target) {
-    // Guard against empty/undefined target or message
-    if (!target || !message) {
-        console.warn('[notifications] sendWhatsAppNotification called with missing target or message.', { target, message });
-        toast('WA notification skipped (missing target or message)', 'err');
-        return { ok: false };
-    }
-
+export async function sendWhatsAppNotification(message, target = DEFAULT_WA_GROUP) {
     try {
-        const response = await fetch('/.netlify/functions/send-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ target, message }),
-        });
+        const response = await fetch(
+            '/.netlify/functions/send-notification',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    target,
+                    message
+                })
+            }
+        );
 
         const result = await response.json();
 
-        if (result.ok) {
-            console.log('Notification sent successfully.');
-            toast('📱 WA notification sent', 'wa');
-            return { ok: true };
-        } else {
-            console.error('Notification proxy error:', result.error);
-            toast('WA notification failed', 'err');
-            return { ok: false };
+        if (!result.ok) {
+            console.error('WhatsApp notification failed:', result.error);
+            toast(`WhatsApp notification failed: ${result.error}`, 'err');
         }
-    } catch (error) {
-        console.error('Error reaching notification proxy:', error);
-        toast('WA notification failed', 'err');
-        return { ok: false };
+
+        return result.ok;
+
+    } catch (err) {
+        console.error('Notification request failed:', err);
+        toast('Unable to connect to notification service', 'err');
+        return false;
     }
 }
-
-// --- HELPERS ---
 
 /**
  * Resolves the display label for a WO's asset.
