@@ -1549,9 +1549,3 @@ body.print-reports .audit-panel {
     opacity: 0.5;
     cursor: not-allowed;
 }
-
-.er-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
