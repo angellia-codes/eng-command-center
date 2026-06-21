@@ -157,8 +157,8 @@ function renderWORow(wo) {
 
     const asset = wo.assets;
     const assetLabel = asset
-        ? `${escapeHtml(asset.asset_code||'N/A')}: ${escapeHtml(asset.model||asset.category)}`
-        : escapeHtml(wo.asset_other||'Non-Registered');
+    ? `${escapeHtml(asset.asset_code || 'N/A')}: ${escapeHtml(asset.model || asset.category)}`
+    : escapeHtml(wo.asset_other || 'General Engineering Request');
 
     const rawDesc = wo.description || '';
     const description = escapeHtml(rawDesc.length > 95 ? rawDesc.slice(0,95)+'…' : rawDesc);
@@ -298,20 +298,22 @@ async function handleFormSubmit(e) {
         const user   = getCurrentUserProfile();
         const woData = Object.fromEntries(new FormData(woForm).entries());
 
-        if (!woData.asset_id && !woData.asset_other) {
-            toast('Please select a registered asset or describe the task.','err');
+        if (!woData.outlet || !woData.priority || !woData.description) {
+            toast('Outlet, Priority, and Description are required.','err');
             return;
         }
 
         const record = {
-            outlet: woData.outlet, type: woData.type || 'Corrective',
-            asset_id: woData.asset_id ? parseInt(woData.asset_id,10) : null,
-            asset_other: woData.asset_other || null,
-            priority: woData.priority, created_by: woData.created_by,
-            description: woData.description,
-            schedule_id: woData.schedule_id ? parseInt(woData.schedule_id,10) : null,
-            user_id: user.id,
-        };
+    outlet: woData.outlet,
+    type: woData.type || 'Corrective',
+    asset_id: woData.asset_id ? parseInt(woData.asset_id,10) : null,
+    asset_other: woData.asset_other || null,
+    priority: woData.priority,
+    created_by: woData.created_by,
+    description: woData.description,
+    schedule_id: woData.schedule_id ? parseInt(woData.schedule_id,10) : null,
+    user_id: user.id,
+};
 
         if (editingWOId) {
             const { error } = await supabase.from('work_orders').update(record).eq('id',editingWOId);
