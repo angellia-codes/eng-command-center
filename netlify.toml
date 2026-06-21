@@ -1,10 +1,8 @@
 # netlify.toml
 
 [build]
-  # Netlify will serve index.html as the SPA root.
-  # The functions directory is where serverless functions live.
+  publish = "."
   functions = "netlify/functions"
-  publish   = "."
 
 # Redirect all non-asset requests to index.html for the SPA router
 [[redirects]]

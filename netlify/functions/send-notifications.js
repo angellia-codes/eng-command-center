@@ -1,3 +1,5 @@
+console.log('send-notification function loaded');
+
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
         return {
