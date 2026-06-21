@@ -1,19 +1,20 @@
-# netlify.toml
-
 [build]
   publish = "."
   functions = "netlify/functions"
 
-# Redirect all non-asset requests to index.html for the SPA router
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
   status = 200
 
-# Lock down the notification proxy: same-origin POST only
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
 [[headers]]
   for = "/.netlify/functions/send-notification"
   [headers.values]
-    Access-Control-Allow-Origin  = "same-origin"
+    Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
