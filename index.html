@@ -313,6 +313,17 @@
     <div class="panel">
       <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Engineering Requests</span><button class="btn-accept" id="btn-new-er" style="font-size:12px;">+ Submit Request</button></div>
       <div class="table-wrapper" style="max-height:280px;"><table class="wo-table"><thead><tr><th style="width:90px;">Request #</th><th style="width:140px;">Outlet / Dept</th><th>Description</th><th style="width:90px;">Priority</th><th style="width:120px;">Status</th><th style="width:150px;">Actions</th></tr></thead><tbody id="er-tbody"><tr><td colspan="6" class="loading-cell"><span class="spinner"></span>Loading…</td></tr></tbody></table></div>
+        <div class="er-actions">
+          <button class="btn-edit-er" data-er-id="${er.id}">
+                ✏️ Edit
+          </button>
+          <button class="btn-delete-er" data-er-id="${er.id}">
+                🗑️ Delete
+          </button>
+        </div>
+        <div class="er-actions">
+        ${actionsHTML}
+        </div>
     </div>
 
     <!-- 5.1: Inventory & Spare Parts -->

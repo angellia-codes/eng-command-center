@@ -423,8 +423,10 @@ export function initEngineeringRequestsEventListeners() {
             if (e.target.matches('.btn-edit-er'))
                 editER(erId);
 
-            if (e.target.matches('.btn-delete-er'))
-                deleteER(erId);
+            if (e.target.matches('.btn-delete-er')) {
+    console.log('Delete clicked:', erId);
+    deleteER(erId);
+}
         });
     }
 }

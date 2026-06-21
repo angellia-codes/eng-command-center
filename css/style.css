@@ -1500,3 +1500,58 @@ body.print-reports .audit-panel {
     padding-right: 12px !important;
   }
 }
+
+/* Engineering Request Action Buttons */
+
+.btn-edit-er,
+.btn-delete-er {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 70px;
+}
+
+/* Edit */
+.btn-edit-er {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.btn-edit-er:hover {
+    background: #BFDBFE;
+    transform: translateY(-1px);
+}
+
+/* Delete */
+.btn-delete-er {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.btn-delete-er:hover {
+    background: #FECACA;
+    transform: translateY(-1px);
+}
+
+/* Active state */
+.btn-edit-er:active,
+.btn-delete-er:active {
+    transform: translateY(0);
+}
+
+/* Disabled */
+.btn-edit-er:disabled,
+.btn-delete-er:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.er-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
