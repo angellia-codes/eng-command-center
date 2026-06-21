@@ -72,16 +72,7 @@ export function renderERList(requests) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#9CA3AF;">
             No engineering requests yet. Click "+ Submit Request" to create one.
         </td></tr>`;
-        return;
-        <td>
-    <button class="btn-edit-er" data-id="${er.id}">
-        Edit
-    </button>
-
-    <button class="btn-delete-er" data-id="${er.id}">
-        Delete
-    </button>
-</td>
+        return
     }
 
     const user       = getCurrentUserProfile();
@@ -95,15 +86,15 @@ export function renderERList(requests) {
     const actionButtons =
     user?.role === 'admin'
         ? `
-            <button class="btn-edit-er" data-id="${er.id}">
+            <button class="btn-edit-er" data-er-id="${er.id}">
                 Edit
             </button>
-            <button class="btn-delete-er" data-id="${er.id}">
+            <button class="btn-delete-er" data-er-id="${er.id}">
                 Delete
             </button>
           `
         : '';
-        let actionsHTML = '';
+        let actionsHTML = actionButtons;
         if (er.status === 'Pending' || er.status === 'In Review') {
             if (canConvert) {
                 actionsHTML += `<button class="btn-accept btn-convert-er" data-er-id="${escapeHtml(er.id)}"
@@ -123,6 +114,10 @@ export function renderERList(requests) {
                     <div style="font-size:12px;font-weight:600;color:#374151;">${escapeHtml(er.outlet)}${deptLine}</div>
                     ${er.location ? `<div style="font-size:10.5px;color:#9CA3AF;">${escapeHtml(er.location)}</div>` : ''}
                 </td>
+                <td title="${escapeHtml(rawDesc)}">
+                    <div style="font-size:12px;color:#374151;line-height:1.4;">
+                     ${desc}
+                </div>
                 <td><div style="font-size:12px;color:#374151;line-height:1.4;">${desc}</div></td>
                 <td><span class="badge ${PRIORITY_CLASS[er.priority] || 'bp-low'}">${escapeHtml(er.priority)}</span></td>
                 <td><span class="badge ${STATUS_CLASS[er.status] || 'bs-pending'}">${escapeHtml(er.status)}</span></td>
@@ -224,7 +219,9 @@ async function convertERtoWO(erId) {
 
     const { error } = await supabase
         .from('engineering_requests')
-        .update({ status: 'Converted to WO', assigned_wo_id: null })
+        .update({
+    status: 'Converted to WO'
+})
         .eq('id', erId);
 
     if (error) {
@@ -246,14 +243,77 @@ async function convertERtoWO(erId) {
 
 async function closeER(erId) {
     const user = getCurrentUserProfile();
+
+    if (!['admin', 'manager'].includes(user.role)) {
+        toast('Permission denied', 'err');
+        return;
+    }
+
     const { error } = await supabase
         .from('engineering_requests')
         .update({ status: 'Closed' })
         .eq('id', erId);
-
+        return;
+    }
     if (error) { toast(`Error closing ER: ${error.message}`, 'err'); return; }
     toast(`${erId} closed.`, 'ok');
     addAuditLog(`${erId} closed by ${user.full_name}.`, 'status');
+    const fresh = await fetchEngineeringRequests();
+    renderERList(fresh);
+
+async function editER(erId) {
+     const editId = e.target.dataset.editId;
+    if (editId) 
+    const { error } = await supabase
+        .from('engineering_requests')
+        .update({
+            outlet: d.outlet,
+            department: d.department || null,
+            location: d.location || null,
+            description: d.description,
+            priority: d.priority
+        })
+        .eq('id', editId);
+
+    if (error) {
+        toast(error.message, 'err');
+        return;
+    }
+    toast(`${editId} updated successfully`, 'ok');
+    }
+
+async function deleteER(erId) {
+    const user = getCurrentUserProfile();
+
+    if (!user || user.role !== 'admin') {
+        toast('Only administrators can delete engineering requests.', 'err');
+        return;
+    }
+
+    const er = erCache.find(r => r.id === erId);
+
+    if (!confirm(`Delete ${erId}?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+
+    const { error } = await supabase
+        .from('engineering_requests')
+        .delete()
+        .eq('id', erId);
+
+    if (error) {
+        console.error('Delete ER error:', error);
+        toast(`Failed to delete ${erId}: ${error.message}`, 'err');
+        return;
+    }
+
+    addAuditLog(
+        `${erId} deleted by ${user.full_name}. ${er?.outlet ? `Outlet: ${er.outlet}` : ''}`,
+        'delete'
+    );
+
+    toast(`✓ ${erId} deleted successfully`, 'ok');
+
     const fresh = await fetchEngineeringRequests();
     renderERList(fresh);
 }
@@ -261,28 +321,41 @@ async function closeER(erId) {
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
 
 export function initEngineeringRequestsEventListeners() {
-    const btnNew    = document.getElementById('btn-new-er');
+    const btnNew = document.getElementById('btn-new-er');
     const btnCancel = document.getElementById('btn-cancel-er-modal');
-    const erModal   = document.getElementById('er-modal');
-    const erForm    = document.getElementById('er-form');
-    const erTbody   = document.getElementById('er-tbody');
+    const erModal = document.getElementById('er-modal');
+    const erForm = document.getElementById('er-form');
+    const erTbody = document.getElementById('er-tbody');
 
-    if (btnNew)    btnNew.addEventListener('click', openERModal);
+    if (btnNew) btnNew.addEventListener('click', openERModal);
     if (btnCancel) btnCancel.addEventListener('click', closeERModal);
 
     if (erModal) {
-        erModal.addEventListener('click', e => { if (e.target === erModal) closeERModal(); });
+        erModal.addEventListener('click', e => {
+            if (e.target === erModal) closeERModal();
+        });
     }
 
-    if (erForm) erForm.addEventListener('submit', handleERFormSubmit);
-
-    // Table action delegation
+    if (erForm) {
+        erForm.addEventListener('submit', handleERFormSubmit);
+    }
+    
     if (erTbody) {
         erTbody.addEventListener('click', e => {
             const erId = e.target.dataset.erId;
             if (!erId) return;
-            if (e.target.matches('.btn-convert-er')) convertERtoWO(erId);
-            if (e.target.matches('.btn-close-er'))   closeER(erId);
+
+            if (e.target.matches('.btn-convert-er'))
+                convertERtoWO(erId);
+
+            if (e.target.matches('.btn-close-er'))
+                closeER(erId);
+
+            if (e.target.matches('.btn-edit-er'))
+                editER(erId);
+
+            if (e.target.matches('.btn-delete-er'))
+                deleteER(erId);
         });
     }
 }
