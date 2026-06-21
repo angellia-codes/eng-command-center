@@ -1391,3 +1391,112 @@ body.print-reports .audit-panel {
   #inventory-table th:nth-child(4),
   #inventory-table td:nth-child(4) { display: none; }
 }
+
+/* ============================================================
+   Mobile-Friendly Work Order & Purchase Request Forms
+   Append to style.css (after the Phase 5 additions)
+
+   Scope: #wo-form and #pr-form only. No other forms or modals
+   in the app are affected by this file.
+   ============================================================ */
+
+/* ── BASE RULES (all screen sizes) ─────────────────────────── */
+/* These replace inline styles removed from index.html so the
+   mobile media query below can cleanly override them. Desktop
+   layout is unchanged from before this update. */
+
+.photo-actions-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* ── MOBILE (≤640px) ────────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Prevent iOS Safari auto-zoom on input focus.
+     iOS zooms in whenever a focused input has font-size < 16px —
+     this was previously 13.5px, triggering an annoying zoom/
+     scroll-jump every time a user tapped into a field. */
+  #wo-form .fctl,
+  #pr-form .fctl {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  #wo-form textarea.fctl,
+  #pr-form textarea.fctl {
+    min-height: 88px;
+  }
+
+  #wo-form select.fctl,
+  #pr-form select.fctl {
+    min-height: 44px;
+  }
+
+  /* Stack two-column field pairs (Priority/Reported By, Qty/Unit)
+     into a single column — at 320–375px width, two inputs side
+     by side were too cramped to use comfortably. */
+  #wo-form .fcols,
+  #pr-form .fcols {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Larger tap targets on primary action buttons (Apple HIG / 
+     Material Design both recommend ≥44px touch targets) */
+  #wo-form .btn-primary,
+  #wo-form .btn-cancel,
+  #pr-form .btn-primary {
+    min-height: 46px;
+    font-size: 15px;
+  }
+
+  /* Stack Cancel Edit / Submit vertically, full width, and pin
+     them to the bottom of the scrollable form so the primary
+     action stays reachable without scrolling back down on a
+     long form */
+  .form-action-row {
+    flex-direction: column;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 10px 0 2px;
+    margin-top: 14px;
+    border-top: 1px solid #F1EDE6;
+    z-index: 2;
+  }
+
+  /* Photo attach row wraps instead of overflowing on the
+     narrowest phones (320px) */
+  .photo-actions-row {
+    flex-wrap: wrap;
+  }
+
+  .btn-media {
+    flex: 1 1 130px;
+    min-height: 42px;
+    font-size: 13px;
+  }
+
+  /* Larger tap area on the WO / PR tab switcher */
+  .tab-btn {
+    padding: 13px 14px;
+    font-size: 13px;
+  }
+}
+
+/* ── EXTRA-SMALL PHONES (≤400px) ───────────────────────────── */
+@media (max-width: 400px) {
+  /* Reclaim a little horizontal space on devices like iPhone SE */
+  #wo-form, #pr-form {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}

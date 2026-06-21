@@ -73,6 +73,15 @@ export function renderERList(requests) {
             No engineering requests yet. Click "+ Submit Request" to create one.
         </td></tr>`;
         return;
+        <td>
+    <button class="btn-edit-er" data-id="${er.id}">
+        Edit
+    </button>
+
+    <button class="btn-delete-er" data-id="${er.id}">
+        Delete
+    </button>
+</td>
     }
 
     const user       = getCurrentUserProfile();
@@ -83,6 +92,17 @@ export function renderERList(requests) {
         const desc     = escapeHtml(rawDesc.length > 80 ? rawDesc.slice(0, 80) + '…' : rawDesc);
         const deptLine = er.department ? ` · ${escapeHtml(er.department)}` : '';
 
+    const actionButtons =
+    user?.role === 'admin'
+        ? `
+            <button class="btn-edit-er" data-id="${er.id}">
+                Edit
+            </button>
+            <button class="btn-delete-er" data-id="${er.id}">
+                Delete
+            </button>
+          `
+        : '';
         let actionsHTML = '';
         if (er.status === 'Pending' || er.status === 'In Review') {
             if (canConvert) {

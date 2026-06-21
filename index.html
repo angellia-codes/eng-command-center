@@ -343,20 +343,37 @@
           <div class="fgrp"><label class="flbl" for="f-type">WO Type *</label><select class="fctl" id="f-type" name="type" required><option value="">Select type...</option><option value="Corrective">Corrective Maintenance</option><option value="Preventive">Preventive Maintenance</option><option value="Emergency">Emergency</option><option value="Project">Project Work</option></select></div>
           <div class="fcols">
             <div class="fgrp"><label class="flbl" for="f-priority">Priority *</label><select class="fctl" id="f-priority" name="priority" required><option value="">Select...</option><option>Low</option><option>Medium</option><option>High</option><option>Emergency</option></select></div>
-            <div class="fgrp"><label class="flbl" for="f-by">Reported By *</label><input type="text" class="fctl" id="f-by" name="created_by" placeholder="Your name" required></div>
+            <div class="fgrp"><label class="flbl" for="f-by">Reported By *</label><input type="text" class="fctl" id="f-by" name="created_by" placeholder="Your name" autocomplete="name" required></div>
           </div>
           <div class="fgrp"><label class="flbl" for="f-desc">Description / Scope *</label><textarea class="fctl" id="f-desc" name="description" placeholder="Describe the issue..." required></textarea></div>
           <hr style="border:none;border-top:1px solid #F1EDE6;margin:11px 0;">
-          <div class="fgrp"><label class="flbl">Attach Photo</label><div style="display:flex;gap:8px;align-items:center;"><button type="button" class="btn-media" id="btn-camera">📸 Take Photo</button><button type="button" class="btn-media" id="btn-gallery">📁 Gallery</button><div id="form-prev" style="display:none;flex-shrink:0;"><img id="form-thumb" class="form-thumb" src="" alt="Preview"></div></div><input type="file" id="inp-camera" accept="image/*" capture="environment" style="display:none;"><input type="file" id="inp-gallery" accept="image/*" style="display:none;"></div>
-          <div style="display:flex;gap:10px;margin-top:15px;"><button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none;">Cancel Edit</button><button type="submit" class="btn-primary" id="btn-submit"><i data-lucide="send" style="width:14px;height:14px;" id="submit-icon"></i><span id="submit-text">Submit Work Order</span></button></div>
+          <div class="fgrp">
+            <label class="flbl">Attach Photo</label>
+            <div class="photo-actions-row">
+              <button type="button" class="btn-media" id="btn-camera">📸 Take Photo</button>
+              <button type="button" class="btn-media" id="btn-gallery">📁 Gallery</button>
+              <div id="form-prev" style="display:none;flex-shrink:0;"><img id="form-thumb" class="form-thumb" src="" alt="Preview"></div>
+            </div>
+            <input type="file" id="inp-camera" accept="image/*" capture="environment" style="display:none;">
+            <input type="file" id="inp-gallery" accept="image/*" style="display:none;">
+          </div>
+          <div class="form-action-row">
+            <button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none;">Cancel Edit</button>
+            <button type="submit" class="btn-primary" id="btn-submit"><i data-lucide="send" style="width:14px;height:14px;" id="submit-icon"></i><span id="submit-text">Submit Work Order</span></button>
+          </div>
         </form>
         <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;display:none;" id="pr-form" class="form-content">
           <div class="fgrp"><label class="flbl" for="pr-outlet">Outlet *</label><select class="fctl" id="pr-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
           <div class="fgrp"><label class="flbl">Item / Material Name *</label><input type="text" class="fctl" id="po-item" name="item_name" placeholder="e.g. Contactor 3 Phase..." required></div>
-          <div class="fcols"><div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" id="po-qty" name="qty" placeholder="0" min="1" required></div><div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" id="po-unit" name="unit" placeholder="e.g. Pcs, Kg, Roll..."></div></div>
-          <div class="fgrp"><label class="flbl">Est. Total Cost (IDR) *</label><input type="number" class="fctl" id="po-cost" name="estimated_cost" placeholder="0" min="0" required></div>
+          <div class="fcols">
+            <div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" id="po-qty" name="qty" placeholder="0" min="1" inputmode="numeric" required></div>
+            <div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" id="po-unit" name="unit" placeholder="e.g. Pcs, Kg, Roll..."></div>
+          </div>
+          <div class="fgrp"><label class="flbl">Est. Total Cost (IDR) *</label><input type="number" class="fctl" id="po-cost" name="estimated_cost" placeholder="0" min="0" inputmode="decimal" required></div>
           <div class="fgrp"><label class="flbl">Justification / Linked WO</label><textarea class="fctl" id="po-desc" name="justification" placeholder="Reason for purchase or related WO number..."></textarea></div>
-          <div style="margin-top:15px;"><button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--ng-amber),var(--ng-amber-light));color:#FFF;box-shadow:0 4px 14px rgba(200,136,42,0.32);"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i><span>Send Purchase Request</span></button></div>
+          <div class="form-action-row">
+            <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--ng-amber),var(--ng-amber-light));color:#FFF;box-shadow:0 4px 14px rgba(200,136,42,0.32);"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i><span>Send Purchase Request</span></button>
+          </div>
         </form>
       </div>
       <div class="panel">
@@ -410,6 +427,6 @@
   </div><!-- end main-wrap -->
 </div><!-- end page-app -->
 
-<script type="module" src="./js/core/app.js"></script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
