@@ -13,63 +13,310 @@
 </head>
 <body>
 
-<!-- 5.8: Error Boundary Overlay -->
-<div id="error-overlay" class="error-overlay">
-  <div class="error-card">
-    <div class="error-card-head">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div class="error-card-title">Something Went Wrong</div>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- GLOBAL OVERLAYS                                             -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<!-- Error Boundary -->
+<div id="error-boundary" class="error-boundary" style="display:none;">
+  <div class="error-boundary-card">
+    <div class="error-icon-wrap">
+      <i data-lucide="alert-triangle" style="width:28px;height:28px;color:#DC2626;"></i>
     </div>
-    <div class="error-card-body">
-      <p class="error-message" id="error-overlay-message">An unexpected error occurred. The page may not work correctly.</p>
-      <pre class="error-detail" id="error-overlay-detail"></pre>
-      <div class="error-actions">
-        <button class="btn-mcancel" id="btn-error-dismiss">Dismiss</button>
-        <button class="btn-mconfirm" id="btn-error-reload">Reload Page</button>
-      </div>
-    </div>
+    <h2>Something went wrong</h2>
+    <p>An unexpected error occurred. Try refreshing the page, or contact your system administrator if the issue persists.</p>
+    <details class="error-details">
+      <summary>Technical details</summary>
+      <pre id="error-details-text">No details available.</pre>
+    </details>
+    <button class="btn-primary" onclick="window.location.reload()" style="margin-top:4px;">
+      <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+      <span>Reload Page</span>
+    </button>
   </div>
 </div>
 
-<!-- Lightbox -->
-<div id="img-lb" class="img-lb" style="display:none;"><img id="img-lb-src" src="" alt="WO Photo"></div>
+<!-- Image Lightbox -->
+<div id="img-lb" class="img-lb" style="display:none;">
+  <img id="img-lb-src" src="" alt="WO Photo">
+</div>
 
-<!-- Action Modal -->
+<!-- Generic Action Modal -->
 <div id="action-modal" class="modal-ov" style="display:none;">
   <div class="modal-box">
-    <div class="modal-head"><div class="modal-title" id="m-title"></div><div class="modal-sub" id="m-sub"></div></div>
+    <div class="modal-head">
+      <div class="modal-title" id="m-title"></div>
+      <div class="modal-sub"   id="m-sub"></div>
+    </div>
     <div class="modal-body" id="m-body"></div>
-    <div class="modal-foot"><button class="btn-mcancel" id="m-btn-cancel">Cancel</button><button class="btn-mconfirm" id="m-btn-confirm">Confirm</button></div>
+    <div class="modal-foot">
+      <button class="btn-mcancel"  id="m-btn-cancel">Cancel</button>
+      <button class="btn-mconfirm" id="m-btn-confirm">Confirm</button>
+    </div>
   </div>
 </div>
 
-<!-- Comments Modal -->
-<div id="comments-modal" class="modal-ov" style="display:none;">
-  <div class="modal-box" style="width:540px;max-height:90vh;display:flex;flex-direction:column;">
-    <div class="modal-head" style="flex-shrink:0;"><div class="modal-title">Work Order Notes</div><div class="modal-sub" id="comments-modal-sub"></div></div>
-    <div class="comments-list" id="comments-list" style="flex:1;overflow-y:auto;"></div>
-    <div style="padding:14px 20px;border-top:1px solid #F1EDE6;flex-shrink:0;">
-      <textarea class="fctl" id="comment-input" rows="2" placeholder="Add a note… (Ctrl+Enter to post)"></textarea>
-      <div style="display:flex;justify-content:flex-end;margin-top:8px;gap:8px;">
-        <button type="button" class="btn-mcancel" id="btn-close-comments">Close</button>
-        <button type="button" class="btn-mconfirm" id="btn-post-comment">Post Note</button>
+<!-- WO Notes Modal -->
+<div id="notes-modal" class="modal-ov" style="display:none;">
+  <div class="modal-box" style="width:480px;">
+    <div class="modal-head">
+      <div class="modal-title" id="notes-modal-title">Work Order Notes</div>
+      <div class="modal-sub"   id="notes-modal-sub">Add or view technician notes for this work order.</div>
+    </div>
+    <div class="modal-body">
+      <div class="notes-list" id="notes-list">
+        <!-- Sample note -->
+        <div class="note-entry">
+          <div class="note-meta">
+            <span class="note-author">Budi Santoso</span>
+            <span class="note-time">2026-06-23 09:14</span>
+          </div>
+          <div class="note-text">Checked compressor unit — found refrigerant leak at the high-pressure valve. Ordered replacement part from supplier. ETA tomorrow morning.</div>
+        </div>
+        <div class="note-entry">
+          <div class="note-meta">
+            <span class="note-author">Wayan Artika</span>
+            <span class="note-time">2026-06-23 11:42</span>
+          </div>
+          <div class="note-text">Replacement valve arrived. Proceeding with repair. Will update on completion.</div>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid #F1EDE6;margin:14px 0 12px;">
+      <div class="fgrp" style="margin:0;">
+        <label class="flbl">Add Note</label>
+        <textarea class="fctl" id="note-input" placeholder="Type your update or observation here..." style="min-height:80px;"></textarea>
       </div>
     </div>
+    <div class="modal-foot">
+      <button class="btn-mcancel" id="btn-close-notes-modal">Close</button>
+      <button class="btn-mconfirm" id="btn-save-note">
+        <i data-lucide="message-square" style="width:13px;height:13px;margin-right:4px;"></i>Add Note
+      </button>
+    </div>
   </div>
+</div>
+
+<!-- Inventory Modal -->
+<div id="inventory-modal" class="modal-ov" style="display:none;">
+  <form id="inventory-form" class="modal-box" style="width:540px;">
+    <div class="modal-head">
+      <div class="modal-title">Add Spare Part</div>
+      <div class="modal-sub">Register a new part or consumable to the inventory system.</div>
+    </div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Part Code *</label>
+          <input type="text" class="fctl" name="part_code" placeholder="e.g., SP-001">
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Category</label>
+          <select class="fctl" name="category">
+            <option value="">Select...</option>
+            <option>Electrical</option>
+            <option>Mechanical</option>
+            <option>Plumbing</option>
+            <option>HVAC / Refrigeration</option>
+            <option>Kitchen Equipment</option>
+            <option>Safety / PPE</option>
+            <option>Consumable</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Part Name *</label>
+        <input type="text" class="fctl" name="part_name" placeholder="e.g., Contactor 3 Phase 40A Schneider">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Description</label>
+        <textarea class="fctl" name="description" style="min-height:50px;" placeholder="Specifications, compatible models..."></textarea>
+      </div>
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Outlet *</label>
+          <select class="fctl" name="outlet" required>
+            <option value="">Select outlet...</option>
+            <option>Nourish Ungasan</option>
+            <option>Nourish Uluwatu</option>
+            <option>Nourish Berawa</option>
+            <option>Nourish Central Kitchen</option>
+            <option>The Bakery Uluwatu</option>
+            <option>The Bakery Kitchen</option>
+            <option>Nourish Office</option>
+            <option>Engineering Dept</option>
+          </select>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Unit</label>
+          <input type="text" class="fctl" name="unit" placeholder="e.g., Pcs, Roll, Liter">
+        </div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Min Stock *</label>
+          <input type="number" class="fctl" name="min_stock" min="0" placeholder="0" required>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Current Stock *</label>
+          <input type="number" class="fctl" name="current_stock" min="0" placeholder="0" required>
+        </div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Supplier / Vendor</label>
+          <input type="text" class="fctl" name="supplier" placeholder="Supplier name">
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Unit Cost (IDR)</label>
+          <input type="number" class="fctl" name="unit_cost" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Storage Location</label>
+        <input type="text" class="fctl" name="location" placeholder="e.g., Rack A-3, Engineering Store">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-mcancel" id="btn-cancel-inventory-modal">Cancel</button>
+      <button type="submit" class="btn-mconfirm">Save Part</button>
+    </div>
+  </form>
+</div>
+
+<!-- Vendor Modal -->
+<div id="vendor-modal" class="modal-ov" style="display:none;">
+  <form id="vendor-form" class="modal-box" style="width:560px;">
+    <div class="modal-head">
+      <div class="modal-title">Add Vendor</div>
+      <div class="modal-sub">Register a new vendor or service provider.</div>
+    </div>
+    <div class="modal-body">
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Vendor / Company Name *</label>
+          <input type="text" class="fctl" name="vendor_name" placeholder="PT / CV / UD..." required>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Category</label>
+          <select class="fctl" name="category">
+            <option value="">Select...</option>
+            <option>Electrical</option>
+            <option>Mechanical</option>
+            <option>HVAC / Refrigeration</option>
+            <option>Plumbing</option>
+            <option>Kitchen Equipment</option>
+            <option>Civil / Building</option>
+            <option>IT / Electronics</option>
+            <option>Parts Supplier</option>
+            <option>General Contractor</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Contact Person</label>
+          <input type="text" class="fctl" name="contact_person" placeholder="Full name">
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Phone / WhatsApp</label>
+          <input type="tel" class="fctl" name="phone" placeholder="+62 8xx xxxx xxxx">
+        </div>
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Email</label>
+        <input type="email" class="fctl" name="email" placeholder="vendor@company.com">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Address</label>
+        <textarea class="fctl" name="address" style="min-height:54px;" placeholder="Full address..."></textarea>
+      </div>
+      <div class="fcols">
+        <div class="fgrp">
+          <label class="flbl">Contract Start</label>
+          <input type="date" class="fctl" name="contract_start">
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Contract End</label>
+          <input type="date" class="fctl" name="contract_end">
+        </div>
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Performance Rating</label>
+        <div class="star-rating" id="vendor-star-rating">
+          <span class="star" data-val="1">★</span>
+          <span class="star" data-val="2">★</span>
+          <span class="star" data-val="3">★</span>
+          <span class="star" data-val="4">★</span>
+          <span class="star" data-val="5">★</span>
+        </div>
+        <input type="hidden" name="rating" id="vendor-rating-val" value="0">
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Services / Notes</label>
+        <textarea class="fctl" name="notes" style="min-height:54px;" placeholder="Scope of services, terms, remarks..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-mcancel" id="btn-cancel-vendor-modal">Cancel</button>
+      <button type="submit" class="btn-mconfirm">Save Vendor</button>
+    </div>
+  </form>
 </div>
 
 <!-- Asset Modal -->
 <div id="asset-modal" class="modal-ov" style="display:none;">
   <form id="asset-form" class="modal-box" style="width:500px;">
-    <div class="modal-head"><div class="modal-title" id="asset-modal-title">Register New Asset</div><div class="modal-sub">Add equipment to the company registry.</div></div>
+    <div class="modal-head">
+      <div class="modal-title" id="asset-modal-title">Register New Asset</div>
+      <div class="modal-sub">Add a new equipment to the company registry.</div>
+    </div>
     <div class="modal-body">
       <div class="fcols">
-        <div class="fgrp"><label class="flbl">Asset Code</label><input type="text" class="fctl" name="asset_code" placeholder="e.g., K-CK-001"></div>
-        <div class="fgrp"><label class="flbl">Status</label><select class="fctl" name="status"><option>Operational</option><option>Under Repair</option><option>In Maintenance</option><option>Decommissioned</option></select></div>
+        <div class="fgrp">
+          <label class="flbl">Asset Code</label>
+          <input type="text" class="fctl" name="asset_code" placeholder="e.g., K-CK-001">
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Status</label>
+          <select class="fctl" name="status">
+            <option>Operational</option>
+            <option>Under Repair</option>
+            <option>In Maintenance</option>
+            <option>Decommissioned</option>
+          </select>
+        </div>
       </div>
       <div class="fcols">
-        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" name="outlet" required><option value="">Select outlet...</option></select></div>
-        <div class="fgrp"><label class="flbl">Category *</label><select class="fctl" name="category" required><option value="">Select category...</option><option>Civil</option><option>Kitchen/Hot Line</option><option>Bar/Espresso Machine</option><option>Chiller/Cold Storage</option><option>HVAC/AC</option><option>Electrical</option><option>Plumbing</option><option>Other</option></select></div>
+        <div class="fgrp">
+          <label class="flbl">Outlet *</label>
+          <select class="fctl" name="outlet" required>
+            <option value="">Select outlet...</option>
+            <option>Nourish Ungasan</option>
+            <option>Nourish Uluwatu</option>
+            <option>Nourish Berawa</option>
+            <option>Nourish Central Kitchen</option>
+            <option>The Bakery Uluwatu</option>
+            <option>The Bakery Kitchen</option>
+            <option>Nourish Office</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Category *</label>
+          <select class="fctl" name="category" required>
+            <option value="">Select category...</option>
+            <option>Civil</option>
+            <option>Kitchen / Hot Line</option>
+            <option>Bar / Espresso Machine</option>
+            <option>Chiller / Cold Storage</option>
+            <option>HVAC / AC</option>
+            <option>Electrical</option>
+            <option>Plumbing</option>
+            <option>Other</option>
+          </select>
+        </div>
       </div>
       <div class="fcols">
         <div class="fgrp"><label class="flbl">Brand</label><input type="text" class="fctl" name="brand"></div>
@@ -81,159 +328,50 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button type="button" class="btn-mcancel" id="btn-decommission-asset" style="display:none;background:#FEF2F2;color:#991B1B;border-color:#FECACA;">Decommission</button>
       <button type="button" class="btn-mcancel" id="btn-cancel-asset-modal">Cancel</button>
       <button type="submit" class="btn-mconfirm">Save Asset</button>
     </div>
   </form>
 </div>
 
-<!-- PM Modal -->
-<div id="pm-modal" class="modal-ov" style="display:none;">
-  <div class="modal-box" style="width:460px;">
-    <div class="modal-head"><div class="modal-title" id="pm-modal-title">Schedule PM Task</div><div class="modal-sub">Add a recurring maintenance schedule for an asset.</div></div>
-    <div class="modal-body">
-      <div class="fgrp"><label class="flbl">Asset *</label><select class="fctl" id="pm-asset-id" name="asset_id" required><option value="">Select asset...</option></select></div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Frequency *</label><select class="fctl" id="pm-frequency" name="frequency" required><option value="">Select...</option><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option><option>Semi Annual</option><option>Annual</option></select></div>
-        <div class="fgrp"><label class="flbl">Next Service Date *</label><input type="date" class="fctl" id="pm-next-date" name="next_date" required></div>
-      </div>
-    </div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-pm-modal">Cancel</button><button type="submit" form="pm-form" class="btn-mconfirm" id="btn-submit-pm">Save Schedule</button></div>
-    <form id="pm-form" style="display:none;"></form>
-  </div>
-</div>
-
-<!-- Engineering Request Modal -->
-<div id="er-modal" class="modal-ov" style="display:none;">
-  <form id="er-form" class="modal-box" style="width:520px;">
-    <div class="modal-head"><div class="modal-title">Submit Engineering Request</div><div class="modal-sub">Report an issue or request engineering work.</div></div>
-    <div class="modal-body">
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" id="er-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
-        <div class="fgrp"><label class="flbl">Department</label><input type="text" class="fctl" id="er-dept" name="department" placeholder="e.g. F&amp;B Service..."></div>
-      </div>
-      <div class="fgrp"><label class="flbl">Location / Area</label><input type="text" class="fctl" id="er-location" name="location" placeholder="e.g. Kitchen Hood..."></div>
-      <div class="fgrp"><label class="flbl">Priority *</label><select class="fctl" id="er-priority" name="priority" required><option value="">Select...</option><option value="Low">Low — Can wait</option><option value="Medium">Medium — This week</option><option value="High">High — Today</option><option value="Emergency">Emergency — Immediate</option></select></div>
-      <div class="fgrp"><label class="flbl">Description *</label><textarea class="fctl" id="er-description" name="description" rows="4" placeholder="Describe the issue in detail..." required></textarea></div>
-    </div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-er-modal">Cancel</button><button type="submit" class="btn-mconfirm">Submit Request</button></div>
-  </form>
-</div>
-
-<!-- 5.1: Add/Edit Part Modal -->
-<div id="part-modal" class="modal-ov" style="display:none;">
-  <form id="part-form" class="modal-box" style="width:500px;">
-    <div class="modal-head"><div class="modal-title" id="part-modal-title">Register New Part</div><div class="modal-sub">Add a spare part to the inventory.</div></div>
-    <div class="modal-body">
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Part Code</label><input type="text" class="fctl" name="part_code" placeholder="e.g., EL-001"></div>
-        <div class="fgrp"><label class="flbl">Category</label><select class="fctl" name="category"><option value="">Select...</option><option>Mechanical</option><option>Electrical</option><option>Plumbing</option><option>HVAC</option><option>Kitchen Equipment</option><option>Civil</option><option>Other</option></select></div>
-      </div>
-      <div class="fgrp"><label class="flbl">Part Name *</label><input type="text" class="fctl" name="name" placeholder="e.g., Contactor 3 Phase 20A" required></div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" name="unit" placeholder="pcs" value="pcs"></div>
-        <div class="fgrp"><label class="flbl">Outlet / Warehouse</label><select class="fctl" name="outlet"><option value="">General Store</option></select></div>
-      </div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Minimum Stock</label><input type="number" class="fctl" name="min_stock" placeholder="0" min="0" value="0"></div>
-        <div class="fgrp"><label class="flbl">Current Stock</label><input type="number" class="fctl" name="current_stock" placeholder="0" min="0" value="0"></div>
-      </div>
-      <div class="fgrp"><label class="flbl">Location in Store</label><input type="text" class="fctl" name="location" placeholder="e.g., Shelf A-3, Cabinet 2"></div>
-      <div class="fgrp"><label class="flbl">Notes</label><textarea class="fctl" name="notes" rows="2" placeholder="Supplier, spec notes..."></textarea></div>
-    </div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-part-modal">Cancel</button><button type="submit" class="btn-mconfirm">Save Part</button></div>
-  </form>
-</div>
-
-<!-- 5.1: Stock In/Out Modal -->
-<div id="stock-modal" class="modal-ov" style="display:none;">
-  <div class="modal-box">
-    <div class="modal-head"><div class="modal-title" id="stock-modal-title">Stock In</div><div class="modal-sub" id="stock-modal-sub"></div></div>
-    <form id="stock-form" class="modal-body">
-      <div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" name="qty" placeholder="0" min="1" required></div>
-      <div class="stock-max-hint" id="stock-max-hint"></div>
-      <div class="fgrp" style="margin-top:10px;"><label class="flbl">Reference (WO#, PO#, or Reason)</label><input type="text" class="fctl" name="reference" placeholder="e.g., WO-0012 or Monthly restock"></div>
-    </form>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-stock-modal">Cancel</button><button type="submit" form="stock-form" class="btn-mconfirm">Confirm</button></div>
-  </div>
-</div>
-
-<!-- 5.1: Part Movement History Modal -->
-<div id="part-history-modal" class="modal-ov" style="display:none;">
-  <div class="modal-box" style="width:520px;">
-    <div class="modal-head"><div class="modal-title" id="history-modal-title">Movement History</div></div>
-    <div class="modal-body" style="padding:0;max-height:50vh;overflow-y:auto;" id="history-body"></div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-close-history-modal">Close</button></div>
-  </div>
-</div>
-
-<!-- 5.2: Vendor Modal -->
-<div id="vendor-modal" class="modal-ov" style="display:none;">
-  <form id="vendor-form" class="modal-box" style="width:560px;">
-    <div class="modal-head"><div class="modal-title" id="vendor-modal-title">Add Vendor</div><div class="modal-sub">Register a supplier or service contractor.</div></div>
-    <div class="modal-body">
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Vendor Name *</label><input type="text" class="fctl" name="name" required placeholder="e.g., PT Sejahtera Teknik"></div>
-        <div class="fgrp"><label class="flbl">Category</label><select class="fctl" name="category"><option value="">Select...</option></select></div>
-      </div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Contact Person</label><input type="text" class="fctl" name="contact_person" placeholder="Name"></div>
-        <div class="fgrp"><label class="flbl">Phone / WhatsApp</label><input type="text" class="fctl" name="phone" placeholder="+62..."></div>
-      </div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Email</label><input type="email" class="fctl" name="email" placeholder="vendor@email.com"></div>
-        <div class="fgrp"><label class="flbl">Performance Rating</label><select class="fctl" name="performance_rating"><option value="">Not rated</option><option value="5">★★★★★ Excellent</option><option value="4">★★★★☆ Good</option><option value="3">★★★☆☆ Average</option><option value="2">★★☆☆☆ Below Average</option><option value="1">★☆☆☆☆ Poor</option></select></div>
-      </div>
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Contract Start</label><input type="date" class="fctl" name="contract_start"></div>
-        <div class="fgrp"><label class="flbl">Contract End</label><input type="date" class="fctl" name="contract_end"></div>
-      </div>
-      <div class="fgrp"><label class="flbl">Address</label><textarea class="fctl" name="address" rows="2" placeholder="Vendor address..."></textarea></div>
-      <div class="fgrp"><label class="flbl">Notes</label><textarea class="fctl" name="notes" rows="2" placeholder="Any additional notes..."></textarea></div>
-    </div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-vendor-modal">Cancel</button><button type="submit" class="btn-mconfirm">Save Vendor</button></div>
-  </form>
-</div>
-
-<!-- 5.3: Daily Update Form Modal -->
-<div id="daily-update-modal" class="modal-ov" style="display:none;">
-  <form id="daily-update-form" class="modal-box" style="width:540px;">
-    <div class="modal-head"><div class="modal-title" id="daily-update-modal-title">Submit Daily Update</div><div class="modal-sub">End-of-day engineering report for your outlet.</div></div>
-    <div class="modal-body">
-      <div class="fcols">
-        <div class="fgrp"><label class="flbl">Outlet *</label><select class="fctl" name="outlet" required><option value="">Select outlet...</option></select></div>
-        <div class="fgrp"><label class="flbl">Engineer on Duty *</label><input type="text" class="fctl" name="engineer_name" placeholder="Your name" required></div>
-      </div>
-      <div class="fgrp"><label class="flbl">Issues Found</label><textarea class="fctl" name="issues_found" rows="2" placeholder="Any new issues or faults discovered today..."></textarea></div>
-      <div class="fgrp"><label class="flbl">Work Completed</label><textarea class="fctl" name="work_completed" rows="2" placeholder="Tasks finished today..."></textarea></div>
-      <div class="fgrp"><label class="flbl">Ongoing Projects</label><textarea class="fctl" name="ongoing_projects" rows="2" placeholder="Work still in progress..."></textarea></div>
-      <div class="fgrp">
-        <label class="flbl">Pending Items / Carryover</label>
-        <textarea class="fctl" name="pending_items" rows="2" placeholder="Items not yet resolved..."></textarea>
-        <div class="pending-carryover-hint">⚠️ Pre-filled from yesterday's pending items</div>
-      </div>
-      <div class="fgrp"><label class="flbl">Target Completion Date</label><input type="date" class="fctl" name="target_completion"></div>
-    </div>
-    <div class="modal-foot"><button type="button" class="btn-mcancel" id="btn-cancel-daily-update">Cancel</button><button type="submit" class="btn-mconfirm">Submit Update</button></div>
-  </form>
-</div>
-
 <!-- User Management Modal -->
 <div id="users-modal" class="modal-ov" style="display:none;">
   <div class="modal-box" style="width:700px;max-width:95vw;">
-    <div class="modal-head"><div class="modal-title">User Management</div><div class="modal-sub">View and manage user roles and access.</div></div>
-    <div class="modal-body" style="padding:0;"><div class="table-wrapper" style="max-height:50vh;"><table class="wo-table"><thead><tr><th>Name</th><th>Email</th><th>Outlet</th><th>Role</th><th>Status</th></tr></thead><tbody id="users-tbody"></tbody></table></div></div>
-    <div class="modal-foot"><button class="btn-mcancel" id="btn-close-users-modal">Close</button></div>
+    <div class="modal-head">
+      <div class="modal-title">User Management</div>
+      <div class="modal-sub">View and manage user roles and system access.</div>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="table-wrapper" style="max-height:50vh;">
+        <table class="wo-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Outlet</th><th>Role</th><th>Status</th></tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-mcancel" id="btn-close-users-modal">Close</button>
+    </div>
   </div>
 </div>
 
-<!-- ===== LOGIN ===== -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- LOGIN PAGE                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div id="page-login" class="login-bg" style="display:flex;">
   <div class="login-card">
     <div class="login-card-head">
       <div style="position:relative;z-index:1;">
-        <div style="display:flex;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;"><rect width="56" height="56" rx="14" fill="rgba(255,255,255,0.1)"/><path d="M28 8C28 8 14 19 14 30C14 37.7 20.3 44 28 44C35.7 44 42 37.7 42 30C42 19 28 8 28 8Z" fill="rgba(255,255,255,0.88)"/><path d="M28 16C28 16 20 24 20 31C20 34.3 23.6 37 28 38" fill="rgba(45,90,69,0.45)"/><line x1="28" y1="44" x2="28" y2="27" stroke="rgba(45,90,69,0.65)" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div style="display:flex;justify-content:center;margin-bottom:14px;">
+          <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;">
+            <rect width="56" height="56" rx="14" fill="rgba(255,255,255,0.1)"/>
+            <path d="M28 8C28 8 14 19 14 30C14 37.7 20.3 44 28 44C35.7 44 42 37.7 42 30C42 19 28 8 28 8Z" fill="rgba(255,255,255,0.88)"/>
+            <path d="M28 16C28 16 20 24 20 31C20 34.3 23.6 37 28 38" fill="rgba(45,90,69,0.45)"/>
+            <line x1="28" y1="44" x2="28" y2="27" stroke="rgba(45,90,69,0.65)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
         <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:white;text-align:center;letter-spacing:0.05em;line-height:1.2;">NOURISH GROUP INDONESIA</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.55);text-align:center;letter-spacing:0.16em;text-transform:uppercase;margin-top:5px;font-weight:600;">Engineering Command Center</div>
       </div>
@@ -242,7 +380,12 @@
     <div class="login-body">
       <div id="login-error" class="info-callout" style="background:#FEF2F2;border-color:#FECACA;color:#991B1B;margin-bottom:12px;display:none;"></div>
       <button class="google-btn" id="google-login-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0;"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.98 1 12 1 7.35 1 3.4 3.65 1.5 7.5l3.6 2.8C6.01 7.22 8.78 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.6 2.8c2.1-1.94 3.31-4.8 3.31-8.46z"/><path fill="#FBBC05" d="M5.1 14.7c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.5 7.3C.54 9.22 0 11.35 0 13.6s.54 4.38 1.5 6.3l3.6-2.9z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.93l-3.6-2.8c-1.1.74-2.52 1.18-4.36 1.18-3.22 0-5.99-2.18-6.9-5.26l-3.6 2.8C3.4 20.35 7.35 23 12 23z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0;">
+          <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.98 1 12 1 7.35 1 3.4 3.65 1.5 7.5l3.6 2.8C6.01 7.22 8.78 5.04 12 5.04z"/>
+          <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.6 2.8c2.1-1.94 3.31-4.8 3.31-8.46z"/>
+          <path fill="#FBBC05" d="M5.1 14.7c-.24-.72-.38-1.49-.38-2.3s.14-1.58.38-2.3L1.5 7.3C.54 9.22 0 11.35 0 13.6s.54 4.38 1.5 6.3l3.6-2.9z"/>
+          <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.93l-3.6-2.8c-1.1.74-2.52 1.18-4.36 1.18-3.22 0-5.99-2.18-6.9-5.26l-3.6 2.8C3.4 20.35 7.35 23 12 23z"/>
+        </svg>
         <span>Sign in with Google</span>
       </button>
       <div style="text-align:center;font-size:11.5px;color:#9CA3AF;margin-top:16px;">PT Nourish Group Indonesia · Bali</div>
@@ -250,189 +393,1346 @@
   </div>
 </div>
 
-<!-- ===== APP ===== -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MAIN APPLICATION                                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div id="page-app" style="display:none;">
-  <header class="ng-header">
-    <div class="header-inner">
-      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;"><svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:38px;height:38px;flex-shrink:0;"><rect width="42" height="42" rx="10" fill="rgba(255,255,255,0.1)"/><path d="M21 7C21 7 10 15.5 10 24C10 29.8 15 34.5 21 34.5C27 34.5 32 29.8 32 24C32 15.5 21 7 21 7Z" fill="rgba(255,255,255,0.88)"/><path d="M21 13C21 13 14.5 19.5 14.5 25C14.5 27.5 17.5 29.5 21 30" fill="rgba(43,88,64,0.45)"/><line x1="21" y1="34.5" x2="21" y2="21" stroke="rgba(43,88,64,0.65)" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <div><div style="font-family:'Playfair Display',serif;font-size:15.5px;font-weight:700;color:white;letter-spacing:0.05em;line-height:1.2;">NOURISH GROUP INDONESIA</div><div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.15em;text-transform:uppercase;font-weight:600;margin-top:1px;">Engineering Command Center</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
-        <div class="header-pill"><span class="live-dot"></span><span style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;" id="h-active-tickets">—</span></div>
-        <div class="header-pill" style="gap:8px;"><i data-lucide="user" style="width:13px;height:13px;color:rgba(255,255,255,0.55);flex-shrink:0;"></i><div><div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;line-height:1.2;" id="h-user-name">—</div><div style="font-size:9.5px;color:rgba(255,255,255,0.42);line-height:1;text-transform:capitalize;" id="h-user-role">—</div></div></div>
-        <div class="notif-bell-wrap"><button class="logout-btn notif-bell-btn" id="notif-bell" title="Notifications"><i data-lucide="bell" style="width:14px;height:14px;"></i><span id="notif-badge" class="notif-badge" style="display:none;">0</span></button><div id="notif-dropdown" class="notif-dropdown" style="display:none;"></div></div>
-        <button class="logout-btn" id="manage-users-btn" style="display:none;background:rgba(61,122,94,0.25);color:#A7F3D0;border-color:rgba(61,122,94,0.3);">Manage Users</button>
-        <button class="logout-btn" id="logout-btn">Logout</button>
-        <div style="text-align:right;"><div style="font-size:12px;color:rgba(255,255,255,0.78);font-weight:500;" id="h-date"></div><div style="font-size:9.5px;color:rgba(255,255,255,0.38);letter-spacing:0.05em;">Bali, Indonesia</div></div>
-      </div>
-    </div>
-  </header>
+<div class="app-layout">
 
-  <div class="main-wrap">
-
-    <!-- KPI outlet filter -->
-    <div class="dash-header-row"><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B7280;">KPI View:</span><span id="dash-outlet-ctx" style="font-size:12px;font-weight:600;color:var(--ng-green);">All Outlets</span></div><select id="dash-outlet-filter" class="filter-select" style="font-size:12px;padding:4px 24px 4px 8px;"><option value="">All Outlets</option></select></div>
-
-    <div class="dashboard-grid" id="dash-grid"></div>
-
-    <!-- Overview Charts -->
-    <div class="analytics-grid">
-      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Monthly Work Orders</span></div><div class="chart-container"><canvas id="monthlyWoChart"></canvas></div></div>
-      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Status Breakdown</span></div><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
-      <div class="panel"><div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Cost by Outlet</span></div><div class="chart-container"><canvas id="costChart"></canvas></div></div>
-    </div>
-
-    <!-- 5.3: Daily Engineering Updates -->
-    <div class="panel">
-      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <span class="panel-title">Daily Engineering Updates</span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="date" id="daily-update-date" class="report-date-input">
-          <button class="btn-accept" id="btn-submit-daily-update" style="font-size:12px;">+ Submit Update</button>
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px;flex-shrink:0;">
+          <rect width="42" height="42" rx="10" fill="rgba(255,255,255,0.1)"/>
+          <path d="M21 7C21 7 10 15.5 10 24C10 29.8 15 34.5 21 34.5C27 34.5 32 29.8 32 24C32 15.5 21 7 21 7Z" fill="rgba(255,255,255,0.88)"/>
+          <path d="M21 13C21 13 14.5 19.5 14.5 25C14.5 27.5 17.5 29.5 21 30" fill="rgba(43,88,64,0.45)"/>
+          <line x1="21" y1="34.5" x2="21" y2="21" stroke="rgba(43,88,64,0.65)" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-name">NOURISH GROUP</div>
+          <div class="sidebar-brand-sub">Engineering Command Center</div>
         </div>
       </div>
-      <div id="daily-updates-grid" class="daily-updates-grid"><div class="loading-state"><span class="spinner"></span>Loading daily updates…</div></div>
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Collapse sidebar">
+        <i data-lucide="panel-left-close" style="width:15px;height:15px;"></i>
+      </button>
     </div>
 
-    <!-- Asset Hub -->
-    <div class="asset-hub-grid">
-      <div class="panel">
-        <div class="panel-head" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="panel-title">Preventive Maintenance</span>
-          <div style="display:flex;gap:6px;align-items:center;"><div class="pm-view-toggle"><button class="pm-view-btn active" id="btn-pm-due">Due Now</button><button class="pm-view-btn" id="btn-pm-calendar">Schedule</button></div><button class="btn-accept" id="btn-show-pm-modal" style="font-size:11.5px;">+ Add</button></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operations</div>
+      <ul class="nav-list">
+        <li class="nav-item active" id="nav-dashboard">
+          <a class="nav-link" href="#section-dashboard">
+            <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-workorders">
+          <a class="nav-link" href="#section-workorders">
+            <span class="nav-icon"><i data-lucide="wrench" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Work Orders</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-purchase">
+          <a class="nav-link" href="#section-workorders">
+            <span class="nav-icon"><i data-lucide="shopping-cart" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Purchase Requests</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-daily">
+          <a class="nav-link" href="#section-daily">
+            <span class="nav-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Daily Updates</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Assets & Maintenance</div>
+      <ul class="nav-list">
+        <li class="nav-item" id="nav-assets">
+          <a class="nav-link" href="#section-assets">
+            <span class="nav-icon"><i data-lucide="package" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Asset Registry</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-pm">
+          <a class="nav-link" href="#section-assets">
+            <span class="nav-icon"><i data-lucide="calendar-check" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Preventive Maintenance</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-inventory">
+          <a class="nav-link" href="#section-inventory">
+            <span class="nav-icon"><i data-lucide="boxes" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Inventory</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-vendors">
+          <a class="nav-link" href="#section-vendors">
+            <span class="nav-icon"><i data-lucide="truck" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Vendors</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Insights</div>
+      <ul class="nav-list">
+        <li class="nav-item" id="nav-analytics">
+          <a class="nav-link" href="#section-analytics">
+            <span class="nav-icon"><i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-reports">
+          <a class="nav-link" href="#section-reports">
+            <span class="nav-icon"><i data-lucide="file-bar-chart" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item" id="nav-audit">
+          <a class="nav-link" href="#section-audit">
+            <span class="nav-icon"><i data-lucide="terminal" style="width:16px;height:16px;"></i></span>
+            <span class="nav-label">Audit Log</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-user">
+        <div class="sf-avatar"><i data-lucide="user" style="width:14px;height:14px;"></i></div>
+        <div class="sf-user-info">
+          <div class="sf-user-name" id="h-user-name">—</div>
+          <div class="sf-user-role" id="h-user-role">—</div>
         </div>
-        <div class="pm-list" id="pm-list-container"><div class="loading-state"><span class="spinner"></span>Loading…</div></div>
       </div>
-      <div class="panel">
-        <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Asset Registry</span><button class="btn-accept" id="btn-show-asset-modal" style="font-size:12px;">+ Register Asset</button></div>
-        <div class="asset-list" id="asset-list-container"><div class="loading-state"><span class="spinner"></span>Loading…</div></div>
+      <div class="sf-actions">
+        <button class="sf-btn sf-btn-manage" id="manage-users-btn" style="display:none;">
+          <i data-lucide="users" style="width:13px;height:13px;flex-shrink:0;"></i>
+          <span>Manage Users</span>
+        </button>
+        <button class="sf-btn sf-btn-logout" id="logout-btn">
+          <i data-lucide="log-out" style="width:13px;height:13px;flex-shrink:0;"></i>
+          <span>Logout</span>
+        </button>
       </div>
     </div>
+  </aside>
 
-    <!-- Engineering Requests -->
-    <div class="panel">
-      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Engineering Requests</span><button class="btn-accept" id="btn-new-er" style="font-size:12px;">+ Submit Request</button></div>
-      <div class="table-wrapper" style="max-height:280px;"><table class="wo-table"><thead><tr><th style="width:90px;">Request #</th><th style="width:140px;">Outlet / Dept</th><th>Description</th><th style="width:90px;">Priority</th><th style="width:120px;">Status</th><th style="width:150px;">Actions</th></tr></thead><tbody id="er-tbody"><tr><td colspan="6" class="loading-cell"><span class="spinner"></span>Loading…</td></tr></tbody></table></div>
-        <div class="er-actions">
-          <button class="btn-edit-er" data-er-id="${er.id}">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══ MAIN CONTAINER ═══════════════════════════════════════ -->
+  <div class="main-container" id="main-container">
+
+    <!-- ── TOPBAR ─────────────────────────────────────────── -->
+    <div class="topbar">
+      <button class="topbar-toggle" id="topbar-toggle" title="Toggle sidebar">
+        <i data-lucide="menu" style="width:16px;height:16px;"></i>
+      </button>
+
+      <div class="topbar-center">
+        <div class="topbar-title">Engineering Command Center</div>
+        <div class="topbar-subtitle">PT Nourish Group Indonesia · Bali, Indonesia</div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="header-pill">
+          <span class="live-dot"></span>
+          <span style="font-size:12px;color:#065F46;font-weight:600;" id="h-active-tickets">—</span>
+        </div>
+        <div class="topbar-date" id="h-date"></div>
+
+        <!-- Notification Bell -->
+        <div class="notif-wrap" id="notif-wrap">
+          <button class="notif-bell has-unread" id="notif-btn" title="Notifications">
+            <i data-lucide="bell" style="width:16px;height:16px;"></i>
+            <span class="notif-badge" id="notif-badge">3</span>
           </button>
-          <button class="btn-delete-er" data-er-id="${er.id}">
-          </button>
-        </div>
-    </div>
-
-    <!-- 5.1: Inventory & Spare Parts -->
-    <div class="panel">
-      <div class="inventory-alert" id="inventory-alert"></div>
-      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <span class="panel-title">Inventory &amp; Spare Parts</span>
-        <button class="btn-accept" id="btn-show-add-part" style="font-size:12px;">+ Add Part</button>
-      </div>
-      <div class="table-wrapper" style="max-height:320px;" id="inventory-tbody-wrap">
-        <table class="wo-table" id="inventory-table">
-          <thead><tr><th style="width:80px;">Code</th><th>Name</th><th style="width:100px;">Category</th><th style="width:110px;">Outlet</th><th style="width:80px;text-align:center;">Stock</th><th style="width:60px;text-align:center;">Min</th><th style="width:90px;">Status</th><th style="width:160px;">Actions</th></tr></thead>
-          <tbody id="inventory-tbody"><tr><td colspan="8" class="loading-cell"><span class="spinner"></span>Loading inventory…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Workspace -->
-    <div class="workspace-grid">
-      <div class="panel">
-        <div class="panel-head" style="padding:0;"><div style="padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title" id="form-panel-title">Log Work Order</span><span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#9CA3AF;" id="next-id-lbl"></span></div></div>
-        <div class="tab-nav"><button class="tab-btn active" id="tab-wo">Work Order</button><button class="tab-btn" id="tab-po">Purchase Request</button></div>
-        <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;" id="wo-form" class="form-content">
-          <input type="hidden" id="wo-id-input" value=""><input type="hidden" id="wo-schedule-id" name="schedule_id" value="">
-          <div class="fgrp"><label class="flbl" for="f-outlet">Outlet *</label><select class="fctl" id="f-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
-          <div class="fgrp"><label class="flbl" for="f-asset-select">Select Registered Asset</label><select class="fctl" id="f-asset-select" name="asset_id"><option value="">Select a registered asset...</option></select><div style="font-size:11px;text-align:right;color:#888;margin-top:4px;">or describe below</div></div>
-          <div class="fgrp"><label class="flbl">Non-Registered Asset / Task</label><input type="text" class="fctl" id="f-asset-other" name="asset_other" placeholder="e.g., Leaking Pipe, Wall Repair..."></div>
-          <div class="fgrp"><label class="flbl" for="f-type">WO Type *</label><select class="fctl" id="f-type" name="type" required><option value="">Select type...</option><option value="Corrective">Corrective Maintenance</option><option value="Preventive">Preventive Maintenance</option><option value="Emergency">Emergency</option><option value="Project">Project Work</option></select></div>
-          <div class="fcols">
-            <div class="fgrp"><label class="flbl" for="f-priority">Priority *</label><select class="fctl" id="f-priority" name="priority" required><option value="">Select...</option><option>Low</option><option>Medium</option><option>High</option><option>Emergency</option></select></div>
-            <div class="fgrp"><label class="flbl" for="f-by">Reported By *</label><input type="text" class="fctl" id="f-by" name="created_by" placeholder="Your name" autocomplete="name" required></div>
-          </div>
-          <div class="fgrp"><label class="flbl" for="f-desc">Description / Scope *</label><textarea class="fctl" id="f-desc" name="description" placeholder="Describe the issue..." required></textarea></div>
-          <hr style="border:none;border-top:1px solid #F1EDE6;margin:11px 0;">
-          <div class="fgrp">
-            <label class="flbl">Attach Photo</label>
-            <div class="photo-actions-row">
-              <button type="button" class="btn-media" id="btn-camera">📸 Take Photo</button>
-              <button type="button" class="btn-media" id="btn-gallery">📁 Gallery</button>
-              <div id="form-prev" style="display:none;flex-shrink:0;"><img id="form-thumb" class="form-thumb" src="" alt="Preview"></div>
+          <div class="notif-dropdown" id="notif-dropdown" style="display:none;">
+            <div class="notif-header">
+              <span class="notif-header-title">Notifications</span>
+              <button class="notif-mark-all" id="notif-mark-all">Mark all read</button>
             </div>
-            <input type="file" id="inp-camera" accept="image/*" capture="environment" style="display:none;">
-            <input type="file" id="inp-gallery" accept="image/*" style="display:none;">
+            <div class="notif-list" id="notif-list">
+              <div class="notif-item unread">
+                <span class="notif-dot-spacer" style="width:6px;height:6px;border-radius:50%;background:var(--ng-amber);flex-shrink:0;margin-top:5px;display:block;"></span>
+                <div class="notif-item-body">
+                  <div class="notif-item-text"><strong>WO-0014 overdue</strong> — AC Unit Nourish Berawa passed target date.</div>
+                  <div class="notif-item-time">2 hours ago · Work Orders</div>
+                </div>
+              </div>
+              <div class="notif-item unread">
+                <span class="notif-dot-spacer" style="width:6px;height:6px;border-radius:50%;background:var(--ng-amber);flex-shrink:0;margin-top:5px;display:block;"></span>
+                <div class="notif-item-body">
+                  <div class="notif-item-text"><strong>Low stock alert</strong> — V-Belt 3V600 at Nourish Berawa below minimum.</div>
+                  <div class="notif-item-time">4 hours ago · Inventory</div>
+                </div>
+              </div>
+              <div class="notif-item unread">
+                <span class="notif-dot-spacer" style="width:6px;height:6px;border-radius:50%;background:var(--ng-amber);flex-shrink:0;margin-top:5px;display:block;"></span>
+                <div class="notif-item-body">
+                  <div class="notif-item-text"><strong>PM due today</strong> — Monthly service for Espresso Machine @ The Bakery.</div>
+                  <div class="notif-item-time">6 hours ago · Preventive Maintenance</div>
+                </div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-dot-spacer"></div>
+                <div class="notif-item-body">
+                  <div class="notif-item-text">WO-0011 marked <strong>Completed</strong> by Wayan Artika.</div>
+                  <div class="notif-item-time">Yesterday · Work Orders</div>
+                </div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-dot-spacer"></div>
+                <div class="notif-item-body">
+                  <div class="notif-item-text">New purchase request submitted for <strong>Contactor 3P 40A</strong>.</div>
+                  <div class="notif-item-time">Yesterday · Purchase Requests</div>
+                </div>
+              </div>
+            </div>
+            <div class="notif-footer">
+              <a href="#section-audit">View all activity in Audit Log</a>
+            </div>
           </div>
-          <div class="form-action-row">
-            <button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none;">Cancel Edit</button>
-            <button type="submit" class="btn-primary" id="btn-submit"><i data-lucide="send" style="width:14px;height:14px;" id="submit-icon"></i><span id="submit-text">Submit Work Order</span></button>
-          </div>
-        </form>
-        <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;display:none;" id="pr-form" class="form-content">
-          <div class="fgrp"><label class="flbl" for="pr-outlet">Outlet *</label><select class="fctl" id="pr-outlet" name="outlet" required><option value="">Select outlet...</option></select></div>
-          <div class="fgrp"><label class="flbl">Item / Material Name *</label><input type="text" class="fctl" id="po-item" name="item_name" placeholder="e.g. Contactor 3 Phase..." required></div>
-          <div class="fcols">
-            <div class="fgrp"><label class="flbl">Quantity *</label><input type="number" class="fctl" id="po-qty" name="qty" placeholder="0" min="1" inputmode="numeric" required></div>
-            <div class="fgrp"><label class="flbl">Unit</label><input type="text" class="fctl" id="po-unit" name="unit" placeholder="e.g. Pcs, Kg, Roll..."></div>
-          </div>
-          <div class="fgrp"><label class="flbl">Est. Total Cost (IDR) *</label><input type="number" class="fctl" id="po-cost" name="estimated_cost" placeholder="0" min="0" inputmode="decimal" required></div>
-          <div class="fgrp"><label class="flbl">Justification / Linked WO</label><textarea class="fctl" id="po-desc" name="justification" placeholder="Reason for purchase or related WO number..."></textarea></div>
-          <div class="form-action-row">
-            <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--ng-amber),var(--ng-amber-light));color:#FFF;box-shadow:0 4px 14px rgba(200,136,42,0.32);"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i><span>Send Purchase Request</span></button>
-          </div>
-        </form>
-      </div>
-      <div class="panel">
-        <div class="panel-head" style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;"><span class="panel-title">Active Work Orders</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div style="display:flex;gap:5px;flex-wrap:wrap;" id="status-counts"></div><button class="btn-generate-wo" id="btn-export-csv"><i data-lucide="download" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>Export CSV</button></div></div>
-        <div class="filter-bar" id="wo-filter-bar">
-          <div class="filter-search"><svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="filter-search" placeholder="Search WO ID, description, asset…" autocomplete="off"></div>
-          <select id="filter-outlet" class="filter-select"><option value="">All Outlets</option></select>
-          <select id="filter-status" class="filter-select"><option value="">All Statuses</option><option>Pending</option><option>In Progress</option><option>Waiting for Parts</option><option>Completed</option></select>
-          <select id="filter-priority" class="filter-select"><option value="">All Priorities</option><option>Emergency</option><option>High</option><option>Medium</option><option>Low</option></select>
-          <button id="filter-clear" class="btn-filter-clear">✕ Clear</button>
-          <span id="filter-count" class="filter-count"></span>
         </div>
-        <div class="table-wrapper">
-          <table class="wo-table"><thead><tr><th style="width:98px;">WO / Outlet</th><th style="width:100px;">Asset · Type</th><th>Description</th><th style="width:120px;" class="col-timeline">Timeline</th><th style="width:90px;" class="col-cost">Cost / Target</th><th style="width:48px;" class="col-photo">Photo</th><th style="width:135px;">Status · Action</th></tr></thead>
-          <tbody id="wo-tbody"><tr><td colspan="7" class="loading-cell"><span class="spinner"></span>Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+    <!-- END: Topbar -->
+
+    <!-- ── MAIN CONTENT ───────────────────────────────────── -->
+    <div class="main-wrap">
+
+      <!-- ┄ DASHBOARD ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div id="section-dashboard">
+        <!-- Outlet Filter -->
+        <div class="outlet-filter-bar" style="margin-bottom:12px;">
+          <span class="outlet-filter-label">Outlet</span>
+          <div class="outlet-chips" id="outlet-filter-chips">
+            <button class="outlet-chip active" data-outlet="all">All Outlets</button>
+            <button class="outlet-chip" data-outlet="Nourish Ungasan">Ungasan</button>
+            <button class="outlet-chip" data-outlet="Nourish Uluwatu">Uluwatu</button>
+            <button class="outlet-chip" data-outlet="Nourish Berawa">Berawa</button>
+            <button class="outlet-chip" data-outlet="Nourish Central Kitchen">Central Kitchen</button>
+            <button class="outlet-chip" data-outlet="The Bakery Uluwatu">Bakery ULU</button>
+            <button class="outlet-chip" data-outlet="The Bakery Kitchen">Bakery Kitchen</button>
+          </div>
         </div>
-        <!-- 5.6: Load more -->
-        <div id="wo-load-more"></div>
+        <!-- KPI Cards (JS-rendered) -->
+        <div class="dashboard-grid" id="dash-grid">
+          <!-- Skeleton loading state -->
+          <div class="metric-card" style="animation:none;">
+            <div class="sk-line skeleton w-60" style="margin-bottom:12px;"></div>
+            <div class="sk-line skeleton w-40" style="height:28px;margin-bottom:8px;"></div>
+            <div class="sk-line skeleton w-80"></div>
+          </div>
+          <div class="metric-card" style="animation:none;">
+            <div class="sk-line skeleton w-60" style="margin-bottom:12px;"></div>
+            <div class="sk-line skeleton w-40" style="height:28px;margin-bottom:8px;"></div>
+            <div class="sk-line skeleton w-80"></div>
+          </div>
+          <div class="metric-card" style="animation:none;">
+            <div class="sk-line skeleton w-60" style="margin-bottom:12px;"></div>
+            <div class="sk-line skeleton w-40" style="height:28px;margin-bottom:8px;"></div>
+            <div class="sk-line skeleton w-80"></div>
+          </div>
+          <div class="metric-card" style="animation:none;">
+            <div class="sk-line skeleton w-60" style="margin-bottom:12px;"></div>
+            <div class="sk-line skeleton w-40" style="height:28px;margin-bottom:8px;"></div>
+            <div class="sk-line skeleton w-80"></div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- 5.2: Vendor Management -->
-    <div class="panel">
-      <div class="vendor-alert" id="vendor-alert"></div>
-      <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><span class="panel-title">Vendor Management</span><button class="btn-accept" id="btn-show-add-vendor" style="font-size:12px;">+ Add Vendor</button></div>
-      <div class="table-wrapper" style="max-height:280px;"><table class="wo-table"><thead><tr><th>Vendor</th><th style="width:110px;">Category</th><th style="width:140px;">Contact</th><th style="width:120px;">Contract End</th><th style="width:100px;">Rating</th><th style="width:70px;">Status</th><th style="width:160px;">Actions</th></tr></thead><tbody id="vendors-tbody"><tr><td colspan="7" class="loading-cell"><span class="spinner"></span>Loading vendors…</td></tr></tbody></table></div>
-    </div>
-
-    <!-- Reports Section -->
-    <div class="panel reports-panel" id="reports-section">
-      <div class="pdf-only" style="display:none;"><div id="pdf-report-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#1B3A2D;margin-bottom:4px;"></div><div id="pdf-report-date" style="font-size:13px;color:#6B7280;"></div><div id="pdf-report-range" style="font-size:13px;color:#6B7280;margin-bottom:16px;"></div></div>
-      <div class="panel-head reports-head">
-        <button id="btn-toggle-reports" class="reports-toggle-btn"><i data-lucide="bar-chart-2" style="width:15px;height:15px;color:var(--ng-green);"></i><span class="panel-title" style="font-size:15px;">Reports &amp; Analytics</span><span id="report-range-label" class="report-range-chip">All Time</span><i data-lucide="chevron-down" id="reports-chevron" style="width:15px;height:15px;color:#9CA3AF;transition:transform 0.2s;"></i></button>
-        <div class="reports-controls"><div class="date-preset-bar"><button class="date-preset-btn" data-preset="7d">7D</button><button class="date-preset-btn" data-preset="30d">30D</button><button class="date-preset-btn" data-preset="3m">3M</button><button class="date-preset-btn" data-preset="6m">6M</button><button class="date-preset-btn" data-preset="1y">1Y</button><button class="date-preset-btn active" data-preset="all">All</button></div><input type="date" id="report-date-from" class="report-date-input" title="From date"><input type="date" id="report-date-to" class="report-date-input" title="To date"><button class="btn-accept" id="btn-export-pdf" style="font-size:12px;white-space:nowrap;">📄 Export PDF</button></div>
+      <!-- ┄ ANALYTICS ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div class="analytics-grid" id="section-analytics">
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Monthly Work Orders</span></div>
+          <div class="chart-container"><canvas id="monthlyWoChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Status Breakdown</span></div>
+          <div class="chart-container"><canvas id="statusChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;"><span class="panel-title">Cost by Outlet</span></div>
+          <div class="chart-container"><canvas id="costChart"></canvas></div>
+        </div>
       </div>
-      <div id="reports-body" style="display:none;">
-        <div class="report-tabs-bar"><button class="report-tab-btn active" data-tab="aging">📊 WO Aging</button><button class="report-tab-btn" data-tab="financial">💰 Financial</button><button class="report-tab-btn" data-tab="compliance">✅ PM Compliance</button><button class="report-tab-btn" data-tab="mtbf">🔧 MTBF</button></div>
-        <div id="report-aging" class="report-content"><div id="aging-summary" class="report-stat-row"></div><div class="report-two-col"><div><div class="report-section-title">Open Tickets by Age</div><div class="chart-container" style="height:220px;"><canvas id="report-aging-chart"></canvas></div></div><div><div class="report-section-title">Oldest Open Tickets</div><div id="aging-table"></div></div></div></div>
-        <div id="report-financial" class="report-content" style="display:none;"><div id="fin-summary" class="report-stat-row"></div><div class="report-four-col"><div><div class="report-section-title">Cost by Outlet</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-outlet-chart"></canvas></div></div><div><div class="report-section-title">Cost by Category</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-category-chart"></canvas></div></div><div><div class="report-section-title">Monthly Spend Trend</div><div class="chart-container" style="height:220px;"><canvas id="report-fin-trend-chart"></canvas></div></div><div><div class="report-section-title">Top Assets by Cost</div><div id="fin-asset-table"></div></div></div></div>
-        <div id="report-compliance" class="report-content" style="display:none;"><div id="compliance-content"></div></div>
-        <div id="report-mtbf" class="report-content" style="display:none;"><div id="mtbf-content"></div></div>
+
+      <!-- ┄ REPORTS ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div id="section-reports">
+        <div class="reports-panel">
+          <!-- Header -->
+          <div class="reports-header">
+            <div class="reports-header-left">
+              <span class="panel-title">Reports</span>
+              <span class="badge bs-ip" style="font-size:10px;">June 2026</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-print" id="btn-print-report" onclick="window.print()">
+                <i data-lucide="printer" style="width:13px;height:13px;"></i> Export PDF
+              </button>
+              <button class="btn-icon" title="Download CSV">
+                <i data-lucide="download" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Date Range Bar -->
+          <div class="date-range-bar">
+            <div class="date-presets">
+              <button class="preset-btn" data-range="today">Today</button>
+              <button class="preset-btn" data-range="week">This Week</button>
+              <button class="preset-btn active" data-range="month">This Month</button>
+              <button class="preset-btn" data-range="quarter">Quarter</button>
+              <button class="preset-btn" data-range="year">This Year</button>
+              <button class="preset-btn" data-range="custom" id="preset-custom">Custom</button>
+            </div>
+            <div class="date-range-inputs" id="date-range-inputs" style="display:none;">
+              <input type="date" class="date-input" id="report-date-from" value="2026-06-01">
+              <span class="date-sep">→</span>
+              <input type="date" class="date-input" id="report-date-to"   value="2026-06-23">
+              <button class="btn-apply-range">Apply</button>
+            </div>
+          </div>
+
+          <!-- Report Tabs -->
+          <div class="report-tab-nav" id="report-tab-nav">
+            <button class="report-tab active" data-rtab="overview">Overview</button>
+            <button class="report-tab" data-rtab="maintenance">Maintenance</button>
+            <button class="report-tab" data-rtab="assets">Assets</button>
+            <button class="report-tab" data-rtab="inventory">Inventory</button>
+            <button class="report-tab" data-rtab="financial">Financial</button>
+          </div>
+
+          <!-- ── Overview Tab ── -->
+          <div class="report-content-area active" id="rtab-overview">
+            <div class="report-stats-row">
+              <div class="rstat-card">
+                <div class="rstat-value">42</div>
+                <div class="rstat-label">Total WOs</div>
+                <div class="rstat-delta up">↑ 12% vs last month</div>
+              </div>
+              <div class="rstat-card">
+                <div class="rstat-value" style="color:var(--c-success);">38</div>
+                <div class="rstat-label">Completed</div>
+                <div class="rstat-delta up">↑ 90.4% rate</div>
+              </div>
+              <div class="rstat-card">
+                <div class="rstat-value" style="color:var(--c-danger);">4</div>
+                <div class="rstat-label">Overdue</div>
+                <div class="rstat-delta down">↑ 2 vs last month</div>
+              </div>
+              <div class="rstat-card">
+                <div class="rstat-value">3.2h</div>
+                <div class="rstat-label">Avg MTTR</div>
+                <div class="rstat-delta up">↓ 0.8h improved</div>
+              </div>
+              <div class="rstat-card">
+                <div class="rstat-value" style="color:var(--c-success);">87%</div>
+                <div class="rstat-label">PM Compliance</div>
+                <div class="rstat-delta up">↑ 5% vs last month</div>
+              </div>
+            </div>
+            <div class="report-charts-grid">
+              <div class="report-chart-box">
+                <div class="report-chart-title">WO Completion Trend</div>
+                <div class="report-chart-canvas"><canvas id="rChart1"></canvas></div>
+              </div>
+              <div class="report-chart-box">
+                <div class="report-chart-title">WO by Priority</div>
+                <div class="report-chart-canvas"><canvas id="rChart2"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Maintenance Tab ── -->
+          <div class="report-content-area" id="rtab-maintenance">
+            <div class="report-stats-row" style="grid-template-columns:repeat(4,1fr);">
+              <div class="rstat-card"><div class="rstat-value">3.2h</div><div class="rstat-label">Avg MTTR</div></div>
+              <div class="rstat-card"><div class="rstat-value">45d</div><div class="rstat-label">Avg MTBF</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-success);">87%</div><div class="rstat-label">PM Compliance</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-success);">94.2%</div><div class="rstat-label">Availability</div></div>
+            </div>
+
+            <!-- MTBF Table -->
+            <div class="mtbf-table-wrap">
+              <div class="mtbf-table-head">
+                <span class="mtbf-table-title">Asset Reliability — MTBF / MTTR Summary</span>
+                <button class="btn-print" onclick="window.print()" style="font-size:11px;">
+                  <i data-lucide="printer" style="width:12px;height:12px;"></i> Print
+                </button>
+              </div>
+              <table class="mtbf-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Outlet</th>
+                    <th>Category</th>
+                    <th>MTBF (days)</th>
+                    <th>MTTR (hrs)</th>
+                    <th>Failures MTD</th>
+                    <th>Availability</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div style="font-weight:600;color:#374151;">Walk-in Chiller</div><div class="part-code">K-CK-003</div></td>
+                    <td>Central Kitchen</td><td>Chiller/Cold</td>
+                    <td><span class="mtbf-val good">60</span></td>
+                    <td><span class="mtbf-val good">2.1</span></td>
+                    <td>1</td>
+                    <td><div>98.1%</div><div class="avail-bar-bg"><div class="avail-bar-fill" style="width:98%;"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;color:#374151;">Espresso Machine</div><div class="part-code">B-ULU-001</div></td>
+                    <td>The Bakery Uluwatu</td><td>Bar Equipment</td>
+                    <td><span class="mtbf-val warn">30</span></td>
+                    <td><span class="mtbf-val good">1.8</span></td>
+                    <td>3</td>
+                    <td><div>97.2%</div><div class="avail-bar-bg"><div class="avail-bar-fill" style="width:97%;"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;color:#374151;">AC Unit (Hall)</div><div class="part-code">H-UNG-002</div></td>
+                    <td>Nourish Ungasan</td><td>HVAC/AC</td>
+                    <td><span class="mtbf-val warn">21</span></td>
+                    <td><span class="mtbf-val warn">4.5</span></td>
+                    <td>4</td>
+                    <td><div>93.8%</div><div class="avail-bar-bg"><div class="avail-bar-fill" style="width:93%;background:linear-gradient(90deg,#F59E0B,#FBBF24);"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;color:#374151;">Combi Oven</div><div class="part-code">K-UNG-007</div></td>
+                    <td>Nourish Ungasan</td><td>Kitchen Hot Line</td>
+                    <td><span class="mtbf-val bad">14</span></td>
+                    <td><span class="mtbf-val bad">6.2</span></td>
+                    <td>6</td>
+                    <td><div style="color:var(--c-danger);">88.4%</div><div class="avail-bar-bg"><div class="avail-bar-fill" style="width:88%;background:linear-gradient(90deg,#EF4444,#F87171);"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:600;color:#374151;">Water Pump Main</div><div class="part-code">P-BRW-001</div></td>
+                    <td>Nourish Berawa</td><td>Plumbing</td>
+                    <td><span class="mtbf-val good">45</span></td>
+                    <td><span class="mtbf-val good">3.0</span></td>
+                    <td>2</td>
+                    <td><div>96.5%</div><div class="avail-bar-bg"><div class="avail-bar-fill" style="width:96%;"></div></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ── Assets Tab ── -->
+          <div class="report-content-area" id="rtab-assets">
+            <div class="report-stats-row">
+              <div class="rstat-card"><div class="rstat-value">64</div><div class="rstat-label">Total Assets</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-success);">58</div><div class="rstat-label">Operational</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-warning);">4</div><div class="rstat-label">Under Repair</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-danger);">2</div><div class="rstat-label">Critical</div></div>
+              <div class="rstat-card"><div class="rstat-value">94.2%</div><div class="rstat-label">Asset Health</div></div>
+            </div>
+            <div class="empty-state-full">
+              <div class="empty-state-icon"><i data-lucide="file-bar-chart" style="width:24px;height:24px;"></i></div>
+              <div class="empty-state-title">Asset Report</div>
+              <div class="empty-state-hint">Detailed asset health and downtime reports will display here. Select a date range and click Apply to generate.</div>
+            </div>
+          </div>
+
+          <!-- ── Inventory Tab ── -->
+          <div class="report-content-area" id="rtab-inventory">
+            <div class="report-stats-row" style="grid-template-columns:repeat(4,1fr);">
+              <div class="rstat-card"><div class="rstat-value">148</div><div class="rstat-label">Total Parts</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-warning);">12</div><div class="rstat-label">Low Stock</div></div>
+              <div class="rstat-card"><div class="rstat-value" style="color:var(--c-danger);">3</div><div class="rstat-label">Out of Stock</div></div>
+              <div class="rstat-card"><div class="rstat-value">Rp 24.6M</div><div class="rstat-label">Stock Value</div></div>
+            </div>
+            <div class="empty-state-full">
+              <div class="empty-state-icon"><i data-lucide="boxes" style="width:24px;height:24px;"></i></div>
+              <div class="empty-state-title">Inventory Report</div>
+              <div class="empty-state-hint">Stock movement and consumption trends will appear here once data is available for the selected period.</div>
+            </div>
+          </div>
+
+          <!-- ── Financial Tab ── -->
+          <div class="report-content-area" id="rtab-financial">
+            <div class="report-stats-row">
+              <div class="rstat-card"><div class="rstat-value sm">Rp 48.2M</div><div class="rstat-label">Total Spend MTD</div><div class="rstat-delta down">↑ 8% vs last month</div></div>
+              <div class="rstat-card"><div class="rstat-value sm">Rp 12.4M</div><div class="rstat-label">Parts & Materials</div></div>
+              <div class="rstat-card"><div class="rstat-value sm">Rp 22.8M</div><div class="rstat-label">Labor Cost</div></div>
+              <div class="rstat-card"><div class="rstat-value sm">Rp 13.0M</div><div class="rstat-label">Contractor / Vendor</div></div>
+              <div class="rstat-card"><div class="rstat-value sm" style="color:var(--ng-green);">Rp 9.6M</div><div class="rstat-label">Top: Central Kitchen</div></div>
+            </div>
+            <div class="report-charts-grid">
+              <div class="report-chart-box">
+                <div class="report-chart-title">Cost by Outlet (MTD)</div>
+                <div class="report-chart-canvas"><canvas id="rChart3"></canvas></div>
+              </div>
+              <div class="report-chart-box">
+                <div class="report-chart-title">Cost Category Breakdown</div>
+                <div class="report-chart-canvas"><canvas id="rChart4"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- END: reports-panel -->
       </div>
-    </div>
 
-    <!-- Audit Log -->
-    <div class="audit-panel">
-      <div class="audit-topbar"><div class="tdot" style="background:#FF5F57;"></div><div class="tdot" style="background:#FFBD2E;"></div><div class="tdot" style="background:#28CA41;"></div><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.42);margin-left:8px;">nourish.eng / audit_trail.log</span><span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(255,255,255,0.26);" id="audit-ct">0 events</span></div>
-      <div class="audit-body" id="audit-body"></div>
-    </div>
+      <!-- ┄ ASSET HUB (PM + Registry) ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div class="asset-hub-grid" id="section-assets">
 
-  </div><!-- end main-wrap -->
-</div><!-- end page-app -->
+        <!-- PM Schedule -->
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+            <span class="panel-title">Preventive Maintenance</span>
+            <div class="pm-view-toggle">
+              <button class="pm-view-btn active" data-pmview="list"  id="pm-view-list">List</button>
+              <button class="pm-view-btn"         data-pmview="cal"   id="pm-view-cal">Calendar</button>
+            </div>
+          </div>
 
-<script type="module" src="./js/core/app.js"></script>
+          <!-- List View -->
+          <div id="pm-list-container" class="pm-list">
+            <div class="empty-state">Loading schedule...</div>
+          </div>
+
+          <!-- Calendar View (hidden by default) -->
+          <div id="pm-calendar-container" class="pm-calendar" style="display:none;">
+            <div class="cal-header">
+              <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+              <span class="cal-month-label" id="cal-month-label">June 2026</span>
+              <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+            </div>
+            <div class="cal-weekdays">
+              <div class="cal-weekday">Sun</div><div class="cal-weekday">Mon</div>
+              <div class="cal-weekday">Tue</div><div class="cal-weekday">Wed</div>
+              <div class="cal-weekday">Thu</div><div class="cal-weekday">Fri</div>
+              <div class="cal-weekday">Sat</div>
+            </div>
+            <div class="cal-grid" id="cal-grid">
+              <!-- Generated by buildCalendar() in UI script below -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Asset Registry -->
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+            <span class="panel-title">Asset Registry</span>
+            <button class="btn-accept" id="btn-show-asset-modal" style="font-size:12.5px;">+ Register Asset</button>
+          </div>
+          <div class="asset-list" id="asset-list-container">
+            <div class="empty-state-full">
+              <div class="empty-state-icon"><i data-lucide="package" style="width:24px;height:24px;"></i></div>
+              <div class="empty-state-title">No Assets Yet</div>
+              <div class="empty-state-hint">Register your first equipment asset to start tracking maintenance history and PM schedules.</div>
+              <button class="empty-state-action" id="btn-show-asset-modal-2">
+                <i data-lucide="plus" style="width:14px;height:14px;"></i> Register Asset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ┄ WORK ORDERS ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div class="workspace-grid" id="section-workorders">
+
+        <!-- Form Panel -->
+        <div class="panel">
+          <div class="panel-head" style="padding:0;">
+            <div style="padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
+              <span class="panel-title" id="form-panel-title">Log Work Order</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#9CA3AF;" id="next-id-lbl"></span>
+            </div>
+          </div>
+          <div class="tab-nav">
+            <button class="tab-btn active" id="tab-wo">Work Order</button>
+            <button class="tab-btn"        id="tab-po">Purchase Request</button>
+          </div>
+
+          <!-- WO Form -->
+          <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;" id="wo-form" class="form-content">
+            <input type="hidden" id="wo-id-input" value="">
+            <div class="fgrp">
+              <label class="flbl" for="f-outlet">Outlet *</label>
+              <select class="fctl" id="f-outlet" name="outlet" required>
+                <option value="">Select outlet...</option>
+                <option>Nourish Ungasan</option>
+                <option>Nourish Uluwatu</option>
+                <option>Nourish Berawa</option>
+                <option>Nourish Central Kitchen</option>
+                <option>The Bakery Uluwatu</option>
+                <option>The Bakery Kitchen</option>
+                <option>Nourish Office</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label class="flbl" for="f-asset-select">Select Registered Asset</label>
+              <select class="fctl" id="f-asset-select" name="asset_id">
+                <option value="">Select a registered asset...</option>
+              </select>
+              <div style="font-size:11px;text-align:right;color:#888;margin-top:4px;">or specify non-registered asset below</div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl">Non-Registered Asset / Task *</label>
+              <input type="text" class="fctl" id="f-asset-other" name="asset_other" placeholder="e.g., Leaking Pipe, Wall Repair...">
+            </div>
+            <div class="fcols">
+              <div class="fgrp">
+                <label class="flbl" for="f-priority">Priority *</label>
+                <select class="fctl" id="f-priority" name="priority" required>
+                  <option value="">Select...</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Emergency</option>
+                </select>
+              </div>
+              <div class="fgrp">
+                <label class="flbl" for="f-by">Reported By *</label>
+                <input type="text" class="fctl" id="f-by" name="created_by" placeholder="Your name" required>
+              </div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl" for="f-desc">Description / Scope of Work *</label>
+              <textarea class="fctl" id="f-desc" name="description" placeholder="Describe the issue and any urgency notes..." required></textarea>
+            </div>
+            <hr style="border:none;border-top:1px solid #F1EDE6;margin:11px 0;">
+            <div class="fgrp">
+              <label class="flbl">Attach Photo</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button type="button" class="btn-media" id="btn-camera">📸 Take Photo</button>
+                <button type="button" class="btn-media" id="btn-gallery">📁 Gallery</button>
+                <div id="form-prev" style="display:none;flex-shrink:0;"><img id="form-thumb" class="form-thumb" src="" alt="Preview"></div>
+              </div>
+              <input type="file" id="inp-camera"  accept="image/*" capture="environment" style="display:none;">
+              <input type="file" id="inp-gallery" accept="image/*" style="display:none;">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:15px;">
+              <button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none;">Cancel Edit</button>
+              <button type="submit" class="btn-primary" id="btn-submit">
+                <i data-lucide="send" style="width:14px;height:14px;" id="submit-icon"></i>
+                <span id="submit-text">Submit Work Order</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- PR Form -->
+          <form style="padding:14px 16px 16px;flex:1;overflow-y:auto;display:none;" id="pr-form" class="form-content">
+            <div class="fgrp">
+              <label class="flbl" for="pr-outlet">Outlet *</label>
+              <select class="fctl" id="pr-outlet" name="outlet" required>
+                <option value="">Select outlet...</option>
+                <option>Nourish Ungasan</option>
+                <option>Nourish Uluwatu</option>
+                <option>Nourish Berawa</option>
+                <option>Nourish Central Kitchen</option>
+                <option>The Bakery Uluwatu</option>
+                <option>The Bakery Kitchen</option>
+                <option>Nourish Office</option>
+                <option>Engineering Dept</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label class="flbl" for="po-item">Item / Material Name *</label>
+              <input type="text" class="fctl" id="po-item" name="item_name" placeholder="e.g. Contactor 3 Phase..." required>
+            </div>
+            <div class="fcols">
+              <div class="fgrp">
+                <label class="flbl" for="po-qty">Quantity *</label>
+                <input type="number" class="fctl" id="po-qty" name="qty" placeholder="0" min="1" required>
+              </div>
+              <div class="fgrp">
+                <label class="flbl" for="po-unit">Unit</label>
+                <input type="text" class="fctl" id="po-unit" name="unit" placeholder="e.g. Pcs, Kg, Roll...">
+              </div>
+            </div>
+            <div class="fgrp">
+              <label class="flbl" for="po-cost">Est. Total Cost (IDR) *</label>
+              <input type="number" class="fctl" id="po-cost" name="estimated_cost" placeholder="0" min="0" required>
+            </div>
+            <div class="fgrp">
+              <label class="flbl" for="po-desc">Justification / Linked WO</label>
+              <textarea class="fctl" id="po-desc" name="justification" placeholder="Reason for purchase or related WO number..."></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:15px;">
+              <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--ng-amber),var(--ng-amber-light));color:#FFF;box-shadow:0 4px 14px rgba(200,136,42,0.32);">
+                <i data-lucide="shopping-cart" style="width:14px;height:14px;"></i>
+                <span>Send Purchase Request</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- WO Table Panel -->
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span class="panel-title">Active Work Orders</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;" id="status-counts"></div>
+              <button class="btn-generate-wo" id="btn-export-csv">
+                <i data-lucide="download" style="width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i>Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- WO Filter Bar -->
+          <div class="filter-bar">
+            <div class="filter-search-wrap">
+              <i data-lucide="search" class="filter-search-icon" style="width:14px;height:14px;"></i>
+              <input type="text" class="filter-search" id="wo-search" placeholder="Search WO, outlet, asset...">
+            </div>
+            <select class="filter-select" id="wo-filter-priority">
+              <option value="">All Priority</option>
+              <option>Emergency</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+            <select class="filter-select" id="wo-filter-outlet">
+              <option value="">All Outlets</option>
+              <option>Nourish Ungasan</option>
+              <option>Nourish Uluwatu</option>
+              <option>Nourish Berawa</option>
+              <option>Nourish Central Kitchen</option>
+              <option>The Bakery Uluwatu</option>
+              <option>The Bakery Kitchen</option>
+            </select>
+            <div class="filter-status-btns">
+              <button class="filter-status-btn active" data-wostatus="all">All</button>
+              <button class="filter-status-btn" data-wostatus="Pending">Pending</button>
+              <button class="filter-status-btn" data-wostatus="In Progress">In Progress</button>
+              <button class="filter-status-btn" data-wostatus="Completed">Done</button>
+            </div>
+            <button class="filter-clear" id="wo-filter-clear" title="Clear filters">✕ Clear</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="wo-table">
+              <thead>
+                <tr>
+                  <th style="width:98px;">WO / Outlet</th>
+                  <th style="width:90px;">Asset · Priority</th>
+                  <th>Description</th>
+                  <th style="width:120px;">Timeline</th>
+                  <th style="width:90px;">Cost / Target</th>
+                  <th style="width:48px;">Photo</th>
+                  <th style="width:140px;">Status · Action</th>
+                </tr>
+              </thead>
+              <tbody id="wo-tbody">
+                <!-- Loading skeleton -->
+                <tr>
+                  <td colspan="7">
+                    <div class="table-loading">
+                      <div class="sk-row"><div class="sk-avatar skeleton"></div><div class="sk-cell skeleton"></div><div class="sk-cell skeleton" style="flex:2;"></div><div class="sk-cell skeleton"></div></div>
+                      <div class="sk-row"><div class="sk-avatar skeleton"></div><div class="sk-cell skeleton"></div><div class="sk-cell skeleton" style="flex:2;"></div><div class="sk-cell skeleton"></div></div>
+                      <div class="sk-row"><div class="sk-avatar skeleton"></div><div class="sk-cell skeleton"></div><div class="sk-cell skeleton" style="flex:2;"></div><div class="sk-cell skeleton"></div></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ┄ INVENTORY ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div id="section-inventory">
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span class="panel-title">Spare Parts Inventory</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-icon" title="Stock adjustment"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i></button>
+              <button class="btn-icon" title="Export inventory"><i data-lucide="download" style="width:14px;height:14px;"></i></button>
+              <button class="btn-accept" id="btn-show-inventory-modal">+ Add Part</button>
+            </div>
+          </div>
+
+          <!-- Inventory Filter Bar -->
+          <div class="filter-bar">
+            <div class="filter-search-wrap">
+              <i data-lucide="search" class="filter-search-icon" style="width:14px;height:14px;"></i>
+              <input type="text" class="filter-search" id="inv-search" placeholder="Search parts by name, code...">
+            </div>
+            <select class="filter-select" id="inv-filter-category">
+              <option value="">All Categories</option>
+              <option>Electrical</option>
+              <option>Mechanical</option>
+              <option>Plumbing</option>
+              <option>HVAC / Refrigeration</option>
+              <option>Kitchen Equipment</option>
+              <option>Consumable</option>
+            </select>
+            <select class="filter-select" id="inv-filter-outlet">
+              <option value="">All Outlets</option>
+              <option>Nourish Ungasan</option>
+              <option>Nourish Uluwatu</option>
+              <option>Nourish Berawa</option>
+              <option>Nourish Central Kitchen</option>
+              <option>Engineering Dept</option>
+            </select>
+            <div class="filter-status-btns">
+              <button class="filter-status-btn active" data-invstatus="all">All</button>
+              <button class="filter-status-btn" data-invstatus="ok">OK</button>
+              <button class="filter-status-btn" data-invstatus="low">Low Stock</button>
+              <button class="filter-status-btn" data-invstatus="out">Out of Stock</button>
+            </div>
+          </div>
+
+          <div class="table-wrapper" style="max-height:380px;">
+            <table class="wo-table">
+              <thead>
+                <tr>
+                  <th style="width:100px;">Part Code</th>
+                  <th>Part Name</th>
+                  <th style="width:120px;">Category</th>
+                  <th style="width:130px;">Outlet</th>
+                  <th style="width:50px;">Unit</th>
+                  <th style="width:160px;">Stock (Min / Current)</th>
+                  <th style="width:80px;">Status</th>
+                  <th style="width:70px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="inv-tbody">
+                <tr>
+                  <td><span class="part-code">SP-001</span></td>
+                  <td><div style="font-weight:600;font-size:12.5px;color:#374151;">Contactor 3 Phase 40A</div><div style="font-size:10.5px;color:#9CA3AF;">Schneider LC1D40M7</div></td>
+                  <td>Electrical</td>
+                  <td>Central Kitchen</td>
+                  <td>Pcs</td>
+                  <td><div class="inv-stock-bar"><div class="inv-stock-track"><div class="inv-stock-fill" style="width:100%;"></div></div><span class="inv-stock-num">2 / 5</span></div></td>
+                  <td><span class="stock-ok">OK</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="btn-icon" title="Stock in"><i data-lucide="plus" style="width:12px;height:12px;"></i></button><button class="btn-icon danger" title="Stock out"><i data-lucide="minus" style="width:12px;height:12px;"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="part-code">SP-002</span></td>
+                  <td><div style="font-weight:600;font-size:12.5px;color:#374151;">V-Belt 3V 600</div><div style="font-size:10.5px;color:#9CA3AF;">Standard timing belt</div></td>
+                  <td>Mechanical</td>
+                  <td>Nourish Berawa</td>
+                  <td>Pcs</td>
+                  <td><div class="inv-stock-bar"><div class="inv-stock-track"><div class="inv-stock-fill low" style="width:33%;"></div></div><span class="inv-stock-num">3 / 1</span></div></td>
+                  <td><span class="stock-low">Low</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="btn-icon" title="Stock in"><i data-lucide="plus" style="width:12px;height:12px;"></i></button><button class="btn-icon danger" title="Stock out"><i data-lucide="minus" style="width:12px;height:12px;"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="part-code">SP-003</span></td>
+                  <td><div style="font-weight:600;font-size:12.5px;color:#374151;">AC Filter R22 1/2PK</div><div style="font-size:10.5px;color:#9CA3AF;">HVAC replacement filter</div></td>
+                  <td>HVAC / Refrigeration</td>
+                  <td>The Bakery Kitchen</td>
+                  <td>Pcs</td>
+                  <td><div class="inv-stock-bar"><div class="inv-stock-track"><div class="inv-stock-fill out" style="width:0%;"></div></div><span class="inv-stock-num" style="color:var(--c-danger);">5 / 0</span></div></td>
+                  <td><span class="stock-out">Out</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="btn-icon" title="Stock in"><i data-lucide="plus" style="width:12px;height:12px;"></i></button><button class="btn-icon danger" title="Stock out" disabled style="opacity:0.4;"><i data-lucide="minus" style="width:12px;height:12px;"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="part-code">SP-004</span></td>
+                  <td><div style="font-weight:600;font-size:12.5px;color:#374151;">WD-40 Spray 400ml</div><div style="font-size:10.5px;color:#9CA3AF;">Multi-purpose lubricant</div></td>
+                  <td>Consumable</td>
+                  <td>Engineering Dept</td>
+                  <td>Can</td>
+                  <td><div class="inv-stock-bar"><div class="inv-stock-track"><div class="inv-stock-fill" style="width:80%;"></div></div><span class="inv-stock-num">5 / 4</span></div></td>
+                  <td><span class="stock-ok">OK</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="btn-icon" title="Stock in"><i data-lucide="plus" style="width:12px;height:12px;"></i></button><button class="btn-icon danger" title="Stock out"><i data-lucide="minus" style="width:12px;height:12px;"></i></button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="part-code">SP-005</span></td>
+                  <td><div style="font-weight:600;font-size:12.5px;color:#374151;">MCB 3 Phase 16A</div><div style="font-size:10.5px;color:#9CA3AF;">Circuit breaker DIN rail</div></td>
+                  <td>Electrical</td>
+                  <td>Nourish Ungasan</td>
+                  <td>Pcs</td>
+                  <td><div class="inv-stock-bar"><div class="inv-stock-track"><div class="inv-stock-fill low" style="width:50%;"></div></div><span class="inv-stock-num">4 / 2</span></div></td>
+                  <td><span class="stock-low">Low</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="btn-icon" title="Stock in"><i data-lucide="plus" style="width:12px;height:12px;"></i></button><button class="btn-icon danger" title="Stock out"><i data-lucide="minus" style="width:12px;height:12px;"></i></button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="load-more-wrap">
+            <button class="btn-load-more" id="btn-load-more-inv">
+              <i data-lucide="chevrons-down" style="width:14px;height:14px;"></i>
+              Load More Parts
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ┄ VENDORS ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div id="section-vendors">
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span class="panel-title">Vendor Management</span>
+            <div style="display:flex;gap:8px;">
+              <div class="filter-search-wrap" style="min-width:200px;">
+                <i data-lucide="search" class="filter-search-icon" style="width:14px;height:14px;"></i>
+                <input type="text" class="filter-search" id="vendor-search" placeholder="Search vendors...">
+              </div>
+              <button class="btn-accept" id="btn-show-vendor-modal">+ Add Vendor</button>
+            </div>
+          </div>
+          <div class="table-wrapper" style="max-height:360px;">
+            <table class="wo-table">
+              <thead>
+                <tr>
+                  <th>Vendor Name</th>
+                  <th style="width:130px;">Category</th>
+                  <th style="width:130px;">Contact</th>
+                  <th style="width:130px;">Phone / Email</th>
+                  <th style="width:140px;">Contract Period</th>
+                  <th style="width:90px;">Rating</th>
+                  <th style="width:80px;">Status</th>
+                  <th style="width:60px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="vendor-tbody">
+                <tr>
+                  <td><div style="font-weight:600;color:#374151;">PT Mitra Listrik Bali</div><div style="font-size:10.5px;color:#9CA3AF;">Electrical services</div></td>
+                  <td>Electrical</td>
+                  <td>Budi Santoso</td>
+                  <td><div style="font-size:11.5px;">0812-3456-7890</div><div style="font-size:10.5px;color:#9CA3AF;">mitra@email.com</div></td>
+                  <td><div style="font-size:11px;">Jan 2026 – Dec 2026</div></td>
+                  <td><span class="vendor-stars">★★★★<span class="empty">★</span></span></td>
+                  <td><span class="contract-ok">Active</span></td>
+                  <td><button class="btn-icon" title="Edit vendor"><i data-lucide="edit-2" style="width:13px;height:13px;"></i></button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600;color:#374151;">CV Sejuk AC Service</div><div style="font-size:10.5px;color:#9CA3AF;">HVAC maintenance</div></td>
+                  <td>HVAC / Refrigeration</td>
+                  <td>Made Suardana</td>
+                  <td><div style="font-size:11.5px;">0878-5544-1122</div><div style="font-size:10.5px;color:#9CA3AF;">sejuk@gmail.com</div></td>
+                  <td><div style="font-size:11px;">Mar 2026 – Feb 2027</div></td>
+                  <td><span class="vendor-stars">★★★★★</span></td>
+                  <td><span class="contract-ok">Active</span></td>
+                  <td><button class="btn-icon" title="Edit vendor"><i data-lucide="edit-2" style="width:13px;height:13px;"></i></button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600;color:#374151;">UD Karya Teknik</div><div style="font-size:10.5px;color:#9CA3AF;">General mechanical</div></td>
+                  <td>Mechanical</td>
+                  <td>Ketut Wijaya</td>
+                  <td><div style="font-size:11.5px;">0821-9988-3344</div><div style="font-size:10.5px;color:#9CA3AF;">—</div></td>
+                  <td><div style="font-size:11px;">Jun 2025 – Jun 2026</div></td>
+                  <td><span class="vendor-stars">★★★<span class="empty">★★</span></span></td>
+                  <td><span class="contract-expiring">Expiring</span></td>
+                  <td><button class="btn-icon" title="Edit vendor"><i data-lucide="edit-2" style="width:13px;height:13px;"></i></button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:600;color:#374151;">PT Parts Indo Supply</div><div style="font-size:10.5px;color:#9CA3AF;">Spare parts supplier</div></td>
+                  <td>Parts Supplier</td>
+                  <td>Dewi Rahayu</td>
+                  <td><div style="font-size:11.5px;">0811-2233-4455</div><div style="font-size:10.5px;color:#9CA3AF;">sales@partsindo.id</div></td>
+                  <td><div style="font-size:11px;">Feb 2025 – Jan 2026</div></td>
+                  <td><span class="vendor-stars">★★★★<span class="empty">★</span></span></td>
+                  <td><span class="contract-expired">Expired</span></td>
+                  <td><button class="btn-icon" title="Edit vendor"><i data-lucide="edit-2" style="width:13px;height:13px;"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="load-more-wrap">
+            <button class="btn-load-more" id="btn-load-more-vendors">
+              <i data-lucide="chevrons-down" style="width:14px;height:14px;"></i>
+              Load More Vendors
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ┄ DAILY UPDATES ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div id="section-daily">
+        <div class="panel">
+          <div class="panel-head" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <span class="panel-title">Daily Engineering Updates</span>
+            <button class="btn-accept" id="btn-add-daily">+ New Update</button>
+          </div>
+
+          <div class="daily-date-nav">
+            <button class="daily-nav-btn" id="btn-daily-prev">&#8249;</button>
+            <span class="daily-date-label" id="daily-date-label">Monday, 23 June 2026</span>
+            <button class="daily-nav-btn" id="btn-daily-next">&#8250;</button>
+          </div>
+
+          <div class="daily-grid" id="daily-grid">
+            <!-- Nourish Ungasan -->
+            <div class="daily-card">
+              <div class="daily-card-head">
+                <span class="daily-card-outlet">Nourish Ungasan</span>
+                <span class="daily-card-date">23 Jun 2026</span>
+              </div>
+              <div class="daily-card-body">
+                <div>
+                  <div class="daily-field-label">Issues Found</div>
+                  <div class="daily-field-value">AC unit Hall R-1 compressor noisy on startup. Kitchen exhaust fan vibrating.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Work Completed</div>
+                  <div class="daily-field-value">Replaced exhaust fan belt. Cleaned grease trap. Checked fire extinguisher pressure.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Carry Forward Items</div>
+                  <div class="daily-carry-item"><span class="carry-dot"></span><span>AC compressor diagnosis — pending spare part</span></div>
+                  <div class="daily-carry-item"><span class="carry-dot"></span><span>WO-0014 electrical panel inspection ongoing</span></div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Target Completion</div>
+                  <div class="daily-field-value">AC unit: 25 Jun · Panel WO: 24 Jun</div>
+                </div>
+              </div>
+              <div class="daily-card-footer">
+                <span class="daily-team">Team: Budi S. · Wayan A.</span>
+                <span class="daily-status-pending">2 Pending</span>
+              </div>
+            </div>
+
+            <!-- Nourish Berawa -->
+            <div class="daily-card">
+              <div class="daily-card-head">
+                <span class="daily-card-outlet">Nourish Berawa</span>
+                <span class="daily-card-date">23 Jun 2026</span>
+              </div>
+              <div class="daily-card-body">
+                <div>
+                  <div class="daily-field-label">Issues Found</div>
+                  <div class="daily-field-value">Toilet cistern running in staff WC. Minor water leak under hand wash basin.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Work Completed</div>
+                  <div class="daily-field-value">Fixed cistern float valve. Tightened basin drain fitting. PM completed for cold room.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Carry Forward Items</div>
+                  <div class="daily-field-empty">— All items resolved for today</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Target Completion</div>
+                  <div class="daily-field-value">All tasks completed</div>
+                </div>
+              </div>
+              <div class="daily-card-footer">
+                <span class="daily-team">Team: Made S.</span>
+                <span class="daily-status-done">✓ All Done</span>
+              </div>
+            </div>
+
+            <!-- The Bakery Uluwatu -->
+            <div class="daily-card">
+              <div class="daily-card-head">
+                <span class="daily-card-outlet">The Bakery Uluwatu</span>
+                <span class="daily-card-date">23 Jun 2026</span>
+              </div>
+              <div class="daily-card-body">
+                <div>
+                  <div class="daily-field-label">Issues Found</div>
+                  <div class="daily-field-value">Espresso machine group head pressure inconsistent. Grinder burr needs replacing.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Work Completed</div>
+                  <div class="daily-field-value">Descaled espresso machine. Replaced portafilter gaskets. Cleaned steam wand.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Carry Forward Items</div>
+                  <div class="daily-carry-item"><span class="carry-dot"></span><span>Grinder burr replacement — order placed, ETA 2 days</span></div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Target Completion</div>
+                  <div class="daily-field-value">Grinder: 25 Jun 2026</div>
+                </div>
+              </div>
+              <div class="daily-card-footer">
+                <span class="daily-team">Team: Ketut W.</span>
+                <span class="daily-status-pending">1 Pending</span>
+              </div>
+            </div>
+
+            <!-- Central Kitchen -->
+            <div class="daily-card">
+              <div class="daily-card-head">
+                <span class="daily-card-outlet">Nourish Central Kitchen</span>
+                <span class="daily-card-date">23 Jun 2026</span>
+              </div>
+              <div class="daily-card-body">
+                <div>
+                  <div class="daily-field-label">Issues Found</div>
+                  <div class="daily-field-empty">— No issues reported</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Work Completed</div>
+                  <div class="daily-field-value">Weekly PM for walk-in chiller. Lubricated door hinges. Checked refrigerant pressure.</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Carry Forward Items</div>
+                  <div class="daily-field-empty">— All items resolved</div>
+                </div>
+                <div>
+                  <div class="daily-field-label">Target Completion</div>
+                  <div class="daily-field-value">All tasks completed</div>
+                </div>
+              </div>
+              <div class="daily-card-footer">
+                <span class="daily-team">Team: Putu A. · Nyoman D.</span>
+                <span class="daily-status-done">✓ All Done</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="load-more-wrap">
+            <button class="btn-load-more" id="btn-load-more-daily">
+              <i data-lucide="chevrons-down" style="width:14px;height:14px;"></i>
+              Load Previous Days
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ┄ AUDIT LOG ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ -->
+      <div class="audit-panel" id="section-audit">
+        <div class="audit-topbar">
+          <div class="tdot" style="background:#FF5F57;"></div>
+          <div class="tdot" style="background:#FFBD2E;"></div>
+          <div class="tdot" style="background:#28CA41;"></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.42);margin-left:8px;">nourish.eng / audit_trail.log</span>
+          <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(255,255,255,0.26);" id="audit-ct">0 events</span>
+        </div>
+        <div class="audit-body" id="audit-body"></div>
+      </div>
+
+    </div><!-- END: main-wrap -->
+  </div><!-- END: main-container -->
+
+</div><!-- END: app-layout -->
+</div><!-- END: page-app -->
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- APP SCRIPTS                                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script type="module" src="./app.js"></script>
+
+<script>
+(function () {
+  /* ── Sidebar toggle ── */
+  var sidebar = document.getElementById('sidebar');
+  var mainCt  = document.getElementById('main-container');
+  var overlay = document.getElementById('sidebar-overlay');
+  function isMobile() { return window.innerWidth < 768; }
+  function toggleSidebar() {
+    if (isMobile()) {
+      var open = sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active', open);
+    } else {
+      var col = sidebar.classList.toggle('collapsed');
+      mainCt.classList.toggle('expanded', col);
+    }
+  }
+  ['sidebar-toggle','topbar-toggle'].forEach(function(id){
+    var b = document.getElementById(id);
+    if (b) b.addEventListener('click', toggleSidebar);
+  });
+  if (overlay) overlay.addEventListener('click', function(){
+    sidebar.classList.remove('mobile-open'); overlay.classList.remove('active');
+  });
+
+  /* ── Nav active state ── */
+  document.querySelectorAll('.nav-link').forEach(function(link){
+    link.addEventListener('click', function(){
+      document.querySelectorAll('.nav-item').forEach(function(i){ i.classList.remove('active'); });
+      this.closest('.nav-item').classList.add('active');
+      if (isMobile()){ sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); }
+    });
+  });
+  document.getElementById('nav-purchase') && document.getElementById('nav-purchase').addEventListener('click', function(){
+    var t = document.getElementById('tab-po'); if (t) t.click();
+  });
+  window.addEventListener('resize', function(){
+    if (!isMobile()){ sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); }
+  });
+
+  /* ── Notification bell ── */
+  var notifBtn  = document.getElementById('notif-btn');
+  var notifDrop = document.getElementById('notif-dropdown');
+  var notifBadge = document.getElementById('notif-badge');
+  if (notifBtn && notifDrop) {
+    notifBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var vis = notifDrop.style.display === 'block';
+      notifDrop.style.display = vis ? 'none' : 'block';
+    });
+    document.addEventListener('click', function(){ notifDrop.style.display = 'none'; });
+    notifDrop.addEventListener('click', function(e){ e.stopPropagation(); });
+    var markAll = document.getElementById('notif-mark-all');
+    if (markAll) markAll.addEventListener('click', function(){
+      document.querySelectorAll('.notif-item.unread').forEach(function(i){ i.classList.remove('unread'); });
+      notifBtn.classList.remove('has-unread');
+      if (notifBadge) notifBadge.style.display = 'none';
+    });
+  }
+
+  /* ── Outlet filter chips ── */
+  document.querySelectorAll('.outlet-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('.outlet-chip').forEach(function(c){ c.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+
+  /* ── WO Filter bar ── */
+  var woFilterClear = document.getElementById('wo-filter-clear');
+  if (woFilterClear) woFilterClear.addEventListener('click', function(){
+    var s = document.getElementById('wo-search'); if (s) s.value='';
+    var fp = document.getElementById('wo-filter-priority'); if (fp) fp.value='';
+    var fo = document.getElementById('wo-filter-outlet'); if (fo) fo.value='';
+    document.querySelectorAll('.filter-status-btn[data-wostatus]').forEach(function(b){ b.classList.remove('active'); });
+    var allBtn = document.querySelector('.filter-status-btn[data-wostatus="all"]');
+    if (allBtn) allBtn.classList.add('active');
+  });
+  document.querySelectorAll('.filter-status-btn[data-wostatus]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filter-status-btn[data-wostatus]').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.filter-status-btn[data-invstatus]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filter-status-btn[data-invstatus]').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+
+  /* ── Report tabs ── */
+  document.querySelectorAll('.report-tab[data-rtab]').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.report-tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.report-content-area').forEach(function(a){ a.classList.remove('active'); });
+      this.classList.add('active');
+      var area = document.getElementById('rtab-' + this.dataset.rtab);
+      if (area) area.classList.add('active');
+    });
+  });
+
+  /* ── Date range preset buttons ── */
+  document.querySelectorAll('.preset-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.preset-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      var inputs = document.getElementById('date-range-inputs');
+      if (inputs) inputs.style.display = this.dataset.range === 'custom' ? 'flex' : 'none';
+    });
+  });
+
+  /* ── PM Calendar / List view toggle ── */
+  var pmList = document.getElementById('pm-list-container');
+  var pmCal  = document.getElementById('pm-calendar-container');
+  document.querySelectorAll('.pm-view-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.pm-view-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      if (this.dataset.pmview === 'cal'){
+        if (pmList) pmList.style.display = 'none';
+        if (pmCal)  { pmCal.style.display = 'block'; buildCalendar(); }
+      } else {
+        if (pmList) pmList.style.display = 'block';
+        if (pmCal)  pmCal.style.display = 'none';
+      }
+    });
+  });
+
+  /* ── PM Calendar builder ── */
+  var calYear = 2026, calMonth = 5; /* 0-indexed: 5 = June */
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function buildCalendar() {
+    var lbl  = document.getElementById('cal-month-label');
+    var grid = document.getElementById('cal-grid');
+    if (!lbl || !grid) return;
+    lbl.textContent = MONTHS[calMonth] + ' ' + calYear;
+    var first = new Date(calYear, calMonth, 1).getDay();
+    var days  = new Date(calYear, calMonth+1, 0).getDate();
+    var today = new Date();
+    var html  = '';
+    for (var i = 0; i < first; i++) {
+      var prevDay = new Date(calYear, calMonth, -first+i+1).getDate();
+      html += '<div class="cal-cell other-month"><div class="cal-day-num">' + prevDay + '</div></div>';
+    }
+    /* Sample PM events */
+    var events = {5:'<div class="cal-event ev-pm">AC Monthly</div>',10:'<div class="cal-event ev-overdue">Cold Room</div>',15:'<div class="cal-event ev-pm">Exhaust PM</div><div class="cal-event ev-pm">Pump Check</div>',20:'<div class="cal-event ev-done">Oven PM</div>',23:'<div class="cal-event ev-pm">Espresso</div>',28:'<div class="cal-event ev-pm">Generator</div>'};
+    for (var d = 1; d <= days; d++) {
+      var isToday = (d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear());
+      html += '<div class="cal-cell' + (isToday?' today':'') + '"><div class="cal-day-num">' + d + '</div><div class="cal-events">' + (events[d]||'') + '</div></div>';
+    }
+    grid.innerHTML = html;
+  }
+  var calPrev = document.getElementById('cal-prev');
+  var calNext = document.getElementById('cal-next');
+  if (calPrev) calPrev.addEventListener('click', function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} buildCalendar(); });
+  if (calNext) calNext.addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} buildCalendar(); });
+
+  /* ── Inventory modal ── */
+  var invModal = document.getElementById('inventory-modal');
+  var btnShowInv = document.getElementById('btn-show-inventory-modal');
+  var btnCancelInv = document.getElementById('btn-cancel-inventory-modal');
+  if (btnShowInv && invModal)   btnShowInv.addEventListener('click', function(){ invModal.style.display='flex'; });
+  if (btnCancelInv && invModal) btnCancelInv.addEventListener('click', function(){ invModal.style.display='none'; });
+  if (invModal) invModal.addEventListener('click', function(e){ if(e.target===invModal) invModal.style.display='none'; });
+
+  /* ── Vendor modal ── */
+  var vendorModal  = document.getElementById('vendor-modal');
+  var btnShowV     = document.getElementById('btn-show-vendor-modal');
+  var btnCancelV   = document.getElementById('btn-cancel-vendor-modal');
+  if (btnShowV && vendorModal)   btnShowV.addEventListener('click', function(){ vendorModal.style.display='flex'; });
+  if (btnCancelV && vendorModal) btnCancelV.addEventListener('click', function(){ vendorModal.style.display='none'; });
+  if (vendorModal) vendorModal.addEventListener('click', function(e){ if(e.target===vendorModal) vendorModal.style.display='none'; });
+
+  /* ── Vendor star rating ── */
+  var stars = document.querySelectorAll('#vendor-star-rating .star');
+  var ratingVal = document.getElementById('vendor-rating-val');
+  stars.forEach(function(star){
+    star.addEventListener('click', function(){
+      var val = parseInt(this.dataset.val);
+      if (ratingVal) ratingVal.value = val;
+      stars.forEach(function(s){ s.classList.toggle('lit', parseInt(s.dataset.val) <= val); });
+    });
+    star.addEventListener('mouseenter', function(){
+      var val = parseInt(this.dataset.val);
+      stars.forEach(function(s){ s.classList.toggle('lit', parseInt(s.dataset.val) <= val); });
+    });
+    star.addEventListener('mouseleave', function(){
+      var cur = ratingVal ? parseInt(ratingVal.value) : 0;
+      stars.forEach(function(s){ s.classList.toggle('lit', parseInt(s.dataset.val) <= cur); });
+    });
+  });
+
+  /* ── Notes modal ── */
+  var notesModal = document.getElementById('notes-modal');
+  var btnCloseNotes = document.getElementById('btn-close-notes-modal');
+  if (btnCloseNotes && notesModal) btnCloseNotes.addEventListener('click', function(){ notesModal.style.display='none'; });
+  if (notesModal) notesModal.addEventListener('click', function(e){ if(e.target===notesModal) notesModal.style.display='none'; });
+
+  /* ── Asset modal (2nd button) ── */
+  var assetModal2 = document.getElementById('btn-show-asset-modal-2');
+  if (assetModal2) assetModal2.addEventListener('click', function(){
+    var am = document.getElementById('asset-modal'); if(am) am.style.display='flex';
+  });
+
+  /* ── Global error handler ── */
+  window.addEventListener('error', function(e){
+    var eb = document.getElementById('error-boundary');
+    var dt = document.getElementById('error-details-text');
+    if (eb && dt) {
+      dt.textContent = (e.error ? e.error.stack : e.message) || 'Unknown error';
+      /* Only show for truly uncaught errors, not common script issues */
+    }
+  });
+
+  /* ── Escape key for new modals ── */
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    [document.getElementById('inventory-modal'),
+     document.getElementById('vendor-modal'),
+     document.getElementById('notes-modal')]
+    .forEach(function(m){ if(m && m.style.display!=='none') m.style.display='none'; });
+  });
+
+})();
+</script>
 </body>
 </html>
