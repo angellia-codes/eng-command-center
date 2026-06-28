@@ -1,278 +1,358 @@
-// js/daily-updates.js
+// daily.js — Daily Engineering Update Module
+// NGI Engineering Command Center
 
-import { supabase }                     from '../utils/supabase.js';
-import { getCurrentUserProfile }        from '../shared/auth.js';
-import { addAuditLog }                  from '../shared/audit.js';
-import { toast, emptyStateHTML }        from '../core/ui.js';
-import { escapeHtml }                   from '../utils/utils.js';
-import { getOutlets }                   from '../utils/outlets.js';
-import { populateOutletSelect }         from '../utils/outlets.js';
+import { supabase }                    from './supabase.js';
+import { showToast, updateIcons }      from './ui.js';
+import { logAudit }                    from './audit.js';
+import { uploadPhoto }                 from './utils.js';
 
-/**
- * @file Daily Engineering Updates module — Phase 5 (5.3).
- *
- * Each outlet submits one update per day covering:
- *   issues found, work completed, ongoing projects, pending items.
- * Unresolved pending items are carried forward as a pre-fill prompt.
- */
+// ── DOM refs ─────────────────────────────────────────────────
+const dailyGrid      = document.getElementById('daily-grid');
+const dailyDateLabel = document.getElementById('daily-date-label');
+const btnDailyPrev   = document.getElementById('btn-daily-prev');
+const btnDailyNext   = document.getElementById('btn-daily-next');
+const btnAddDaily    = document.getElementById('btn-add-daily');
 
-let updatesCache  = [];
-let selectedDate  = new Date().toISOString().split('T')[0]; // today
+// Form elements
+const dailyFormWrap  = document.getElementById('daily-form-wrap');   // collapsible wrapper
+const dailyForm      = document.getElementById('daily-form');
+const dfOutlet       = document.getElementById('df-outlet');
+const dfDate         = document.getElementById('df-date');
+const dfProgress     = document.getElementById('df-progress');
+const dfIssues       = document.getElementById('df-issues');
+const dfTomorrow     = document.getElementById('df-tomorrow');
+const dfStatus       = document.getElementById('df-status');
+const dfBtnCamera    = document.getElementById('df-btn-camera');
+const dfBtnGallery   = document.getElementById('df-btn-gallery');
+const dfInpCamera    = document.getElementById('df-inp-camera');
+const dfInpGallery   = document.getElementById('df-inp-gallery');
+const dfPreview      = document.getElementById('df-preview');
+const dfThumb        = document.getElementById('df-thumb');
+const btnCancelDaily = document.getElementById('btn-cancel-daily');
 
-// ─── FETCH ────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────
+let currentDate   = new Date();
+let dailyPhotoFile = null;
+let editingId     = null;
 
-export async function fetchDailyUpdates(date = selectedDate) {
-    const { data, error } = await supabase
-        .from('daily_updates')
-        .select('*')
-        .eq('date', date)
-        .order('outlet');
-    if (error) { console.error('[daily-updates] Fetch error:', error); return []; }
-    updatesCache = data;
-    return data;
+// ── Date helpers ──────────────────────────────────────────────
+function toLocalDateStr(d) {
+  return d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+}
+function formatDisplayDate(d) {
+  return d.toLocaleDateString('en-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
 }
 
-async function fetchYesterdayPending(outlet) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split('T')[0];
+// ── Carryover logic ───────────────────────────────────────────
+// For each outlet, if yesterday's (or last logged) update is still 'open',
+// automatically create a carryover entry for today if none exists.
+async function processCarryovers() {
+  const today     = toLocalDateStr(new Date());
+  const yesterday = toLocalDateStr(new Date(Date.now() - 86400000));
 
-    const { data } = await supabase
-        .from('daily_updates')
-        .select('pending_items, target_completion')
-        .eq('outlet', outlet)
-        .eq('date', dateStr)
-        .single();
+  // Fetch yesterday's open updates
+  const { data: openYesterday, error } = await supabase
+    .from('daily_engineering_updates')
+    .select('*')
+    .eq('date', yesterday)
+    .eq('status', 'open');
 
-    return data?.pending_items || null;
+  if (error || !openYesterday?.length) return;
+
+  for (const item of openYesterday) {
+    // Check if today already has an entry for this outlet
+    const { data: existing } = await supabase
+      .from('daily_engineering_updates')
+      .select('id')
+      .eq('date', today)
+      .eq('outlet', item.outlet)
+      .maybeSingle();
+
+    if (existing) continue; // already has today's entry
+
+    // Auto-create carryover
+    await supabase.from('daily_engineering_updates').insert({
+      outlet:           item.outlet,
+      date:             today,
+      progress_update:  null,
+      issues_encountered: null,
+      tomorrow_plan:    null,
+      status:           'open',
+      is_carryover:     true,
+      parent_id:        item.id,
+      technician:       item.technician,
+    });
+  }
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-
-export function renderDailyUpdatesGrid(updates) {
-    const grid = document.getElementById('daily-updates-grid');
-    if (!grid) return;
-
-    const outlets = getOutlets();
-
-    if (outlets.length === 0) {
-        grid.innerHTML = emptyStateHTML('No outlets configured. Please add outlets first.');
-        return;
-    }
-
-    const updateMap = {};
-    updates.forEach(u => { updateMap[u.outlet] = u; });
-
-    grid.innerHTML = outlets.map(outlet => {
-        const update = updateMap[outlet];
-        const isToday = selectedDate === new Date().toISOString().split('T')[0];
-
-        if (update) {
-            return `
-                <div class="daily-card daily-card-submitted">
-                    <div class="daily-card-header">
-                        <div class="daily-card-outlet">${escapeHtml(outlet)}</div>
-                        <span class="badge bs-done" style="font-size:10px;">✓ Submitted</span>
-                    </div>
-                    <div class="daily-card-engineer">👷 ${escapeHtml(update.engineer_name)}</div>
-                    ${update.issues_found ? `
-                        <div class="daily-field">
-                            <div class="daily-field-label">Issues Found</div>
-                            <div class="daily-field-value">${escapeHtml(update.issues_found)}</div>
-                        </div>` : ''}
-                    ${update.work_completed ? `
-                        <div class="daily-field">
-                            <div class="daily-field-label">Work Completed</div>
-                            <div class="daily-field-value">${escapeHtml(update.work_completed)}</div>
-                        </div>` : ''}
-                    ${update.ongoing_projects ? `
-                        <div class="daily-field">
-                            <div class="daily-field-label">Ongoing Projects</div>
-                            <div class="daily-field-value">${escapeHtml(update.ongoing_projects)}</div>
-                        </div>` : ''}
-                    ${update.pending_items ? `
-                        <div class="daily-field daily-field-pending">
-                            <div class="daily-field-label">⏳ Pending</div>
-                            <div class="daily-field-value">${escapeHtml(update.pending_items)}</div>
-                            ${update.target_completion ? `<div style="font-size:10.5px;color:#B45309;margin-top:2px;">Target: ${update.target_completion}</div>` : ''}
-                        </div>` : ''}
-                    ${isToday ? `
-                        <button class="btn-edit-daily admin-btn edit" data-outlet="${escapeHtml(outlet)}"
-                            style="width:100%;margin-top:8px;font-size:11px;padding:4px 0;">Edit Update</button>
-                    ` : ''}
-                </div>`;
-        } else {
-            return `
-                <div class="daily-card daily-card-missing">
-                    <div class="daily-card-header">
-                        <div class="daily-card-outlet">${escapeHtml(outlet)}</div>
-                        <span class="badge bs-pending" style="font-size:10px;">Not submitted</span>
-                    </div>
-                    <div style="font-size:12px;color:#9CA3AF;margin:8px 0 10px;">
-                        No update has been submitted for this outlet ${isToday ? 'today' : 'on this date'}.
-                    </div>
-                    ${isToday ? `
-                        <button class="btn-submit-outlet-daily btn-accept"
-                            data-outlet="${escapeHtml(outlet)}"
-                            style="width:100%;font-size:12px;">+ Submit Update</button>
-                    ` : ''}
-                </div>`;
-        }
-    }).join('');
+// ── Load & render ─────────────────────────────────────────────
+export async function loadDailyUpdates() {
+  await processCarryovers();
+  await renderDailyGrid();
 }
 
-// ─── MODAL ────────────────────────────────────────────────────────────────────
+async function renderDailyGrid(date) {
+  const d   = date || currentDate;
+  const str = toLocalDateStr(d);
 
-export async function openDailyUpdateModal(outlet = null) {
-    const user   = getCurrentUserProfile();
-    const modal  = document.getElementById('daily-update-modal');
-    const form   = document.getElementById('daily-update-form');
-    const title  = document.getElementById('daily-update-modal-title');
-    if (!modal || !form) return;
+  if (dailyDateLabel) dailyDateLabel.textContent = formatDisplayDate(d);
 
-    form.reset();
+  if (!dailyGrid) return;
+  dailyGrid.innerHTML = `
+    <div style="grid-column:1/-1;padding:20px;text-align:center;color:#9CA3AF;">
+      <div class="loading-spinner" style="margin:0 auto 8px;"></div>
+      Loading updates…
+    </div>`;
 
-    // Populate outlet select
-    const outletSel = form.querySelector('[name="outlet"]');
-    if (outletSel) {
-        populateOutletSelect(outletSel, { includeOther: false });
-        if (outlet) outletSel.value = outlet;
-    }
+  const { data, error } = await supabase
+    .from('daily_engineering_updates')
+    .select('*')
+    .eq('date', str)
+    .order('outlet', { ascending: true });
 
-    // Auto-fill engineer name for technicians
-    if (user?.role === 'technician' && user.full_name) {
-        const engEl = form.querySelector('[name="engineer_name"]');
-        if (engEl) engEl.value = user.full_name;
-    }
+  if (error) {
+    dailyGrid.innerHTML = `<div style="grid-column:1/-1;padding:20px;color:#DC2626;">Error loading updates: ${error.message}</div>`;
+    return;
+  }
 
-    // Check if update already exists for this outlet today
-    const existing = updatesCache.find(u => u.outlet === outlet);
-    if (title) title.textContent = existing ? 'Edit Daily Update' : 'Submit Daily Update';
+  if (!data || data.length === 0) {
+    dailyGrid.innerHTML = `
+      <div class="empty-state-full" style="grid-column:1/-1;">
+        <div class="empty-state-icon"><i data-lucide="clipboard-list" style="width:24px;height:24px;"></i></div>
+        <div class="empty-state-title">No updates for ${formatDisplayDate(d)}</div>
+        <div class="empty-state-hint">Click "+ New Update" to log today's engineering activities for each outlet.</div>
+      </div>`;
+    updateIcons();
+    return;
+  }
 
-    if (existing) {
-        // Pre-fill with existing values for editing
-        form.querySelector('[name="engineer_name"]').value  = existing.engineer_name   || '';
-        form.querySelector('[name="issues_found"]').value   = existing.issues_found    || '';
-        form.querySelector('[name="work_completed"]').value = existing.work_completed   || '';
-        form.querySelector('[name="ongoing_projects"]').value = existing.ongoing_projects || '';
-        form.querySelector('[name="pending_items"]').value  = existing.pending_items   || '';
-        form.querySelector('[name="target_completion"]').value = existing.target_completion || '';
-        form.dataset.existingId = existing.id;
-    } else {
-        delete form.dataset.existingId;
-
-        // Carry forward pending items from yesterday
-        if (outlet) {
-            const pendingYesterday = await fetchYesterdayPending(outlet);
-            if (pendingYesterday) {
-                const pendingEl = form.querySelector('[name="pending_items"]');
-                if (pendingEl) {
-                    pendingEl.value = pendingYesterday;
-                    pendingEl.style.borderColor = '#F59E0B';
-                    const hint = form.querySelector('.pending-carryover-hint');
-                    if (hint) hint.style.display = 'block';
-                }
-            }
-        }
-    }
-
-    modal.style.display = 'flex';
+  dailyGrid.innerHTML = data.map(renderDailyCard).join('');
+  updateIcons();
 }
 
-function closeDailyUpdateModal() {
-    const modal = document.getElementById('daily-update-modal');
-    if (modal) modal.style.display = 'none';
-    const form = document.getElementById('daily-update-form');
-    if (form) delete form.dataset.existingId;
+function renderDailyCard(item) {
+  const carryoverBadge = item.is_carryover
+    ? `<span class="badge bs-wfp" style="font-size:9.5px;">⟳ Carried Forward</span>` : '';
+  const statusBadge = item.status === 'completed'
+    ? `<span class="daily-status-done">✓ Completed</span>`
+    : `<span class="daily-status-pending">⏳ Open</span>`;
+  const photoHTML = item.photo_url
+    ? `<div style="margin-top:8px;">
+        <img src="${item.photo_url}" class="img-thumb" style="width:60px;height:60px;" 
+             onclick="document.getElementById('img-lb').style.display='flex';document.getElementById('img-lb-src').src='${item.photo_url}'">
+       </div>` : '';
+
+  return `
+    <div class="daily-card">
+      <div class="daily-card-head">
+        <span class="daily-card-outlet">${item.outlet}</span>
+        <span class="daily-card-date">${item.date}</span>
+      </div>
+      <div class="daily-card-body">
+        ${carryoverBadge ? `<div style="margin-bottom:6px;">${carryoverBadge}</div>` : ''}
+        <div>
+          <div class="daily-field-label">Progress Update</div>
+          ${item.progress_update
+            ? `<div class="daily-field-value">${item.progress_update}</div>`
+            : `<div class="daily-field-empty">Not yet reported</div>`}
+        </div>
+        <div>
+          <div class="daily-field-label">Issues Encountered</div>
+          ${item.issues_encountered
+            ? `<div class="daily-field-value">${item.issues_encountered}</div>`
+            : `<div class="daily-field-empty">None reported</div>`}
+        </div>
+        <div>
+          <div class="daily-field-label">Tomorrow's Plan</div>
+          ${item.tomorrow_plan
+            ? `<div class="daily-field-value">${item.tomorrow_plan}</div>`
+            : `<div class="daily-field-empty">—</div>`}
+        </div>
+        ${photoHTML}
+      </div>
+      <div class="daily-card-footer">
+        <span class="daily-team">${item.technician || 'Unassigned'}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${statusBadge}
+          <button class="btn-icon" title="Edit update" data-daily-edit="${item.id}"
+                  data-outlet="${item.outlet}" data-date="${item.date}"
+                  data-progress="${encodeURIComponent(item.progress_update||'')}"
+                  data-issues="${encodeURIComponent(item.issues_encountered||'')}"
+                  data-tomorrow="${encodeURIComponent(item.tomorrow_plan||'')}"
+                  data-status="${item.status}"
+                  data-technician="${item.technician||''}">
+            <i data-lucide="edit-2" style="width:13px;height:13px;"></i>
+          </button>
+          ${item.status === 'open'
+            ? `<button class="btn-done" data-daily-complete="${item.id}">Mark Done</button>`
+            : ''}
+        </div>
+      </div>
+    </div>`;
 }
 
-async function handleDailyUpdateSubmit(e) {
-    e.preventDefault();
-    const user      = getCurrentUserProfile();
-    const formData  = new FormData(e.target);
-    const d         = Object.fromEntries(formData.entries());
-    const submitBtn = e.target.querySelector('[type="submit"]');
-    const existingId = parseInt(e.target.dataset.existingId, 10) || null;
+// ── Dashboard: today's summary for the dashboard KPI area ────
+export async function getDailyDashboardSummary() {
+  const today = toLocalDateStr(new Date());
+  const { data } = await supabase
+    .from('daily_engineering_updates')
+    .select('outlet, status, is_carryover')
+    .eq('date', today);
 
-    if (!d.outlet || !d.engineer_name) {
-        toast('Outlet and engineer name are required.', 'err');
-        return;
+  if (!data) return { total: 0, completed: 0, carryover: 0 };
+  return {
+    total:     data.length,
+    completed: data.filter(d => d.status === 'completed').length,
+    carryover: data.filter(d => d.is_carryover).length,
+  };
+}
+
+// ── Form: show / hide ─────────────────────────────────────────
+function showDailyForm(prefill = {}) {
+  if (!dailyFormWrap) return;
+  dailyFormWrap.style.display = 'block';
+  dailyFormWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Set defaults / prefill
+  if (dfDate)     dfDate.value     = prefill.date     || toLocalDateStr(currentDate);
+  if (dfOutlet)   dfOutlet.value   = prefill.outlet   || '';
+  if (dfProgress) dfProgress.value = prefill.progress || '';
+  if (dfIssues)   dfIssues.value   = prefill.issues   || '';
+  if (dfTomorrow) dfTomorrow.value = prefill.tomorrow || '';
+  if (dfStatus)   dfStatus.value   = prefill.status   || 'open';
+
+  editingId = prefill.id || null;
+  dailyPhotoFile = null;
+  if (dfPreview) dfPreview.style.display = 'none';
+}
+
+function hideDailyForm() {
+  if (dailyFormWrap) dailyFormWrap.style.display = 'none';
+  if (dailyForm)     dailyForm.reset();
+  editingId     = null;
+  dailyPhotoFile = null;
+  if (dfPreview) dfPreview.style.display = 'none';
+}
+
+// ── Form: photo ───────────────────────────────────────────────
+function handleDailyPhotoInput(file) {
+  if (!file) return;
+  dailyPhotoFile = file;
+  if (dfThumb) { dfThumb.src = URL.createObjectURL(file); }
+  if (dfPreview) dfPreview.style.display = 'block';
+}
+
+// ── Form: submit ──────────────────────────────────────────────
+async function handleDailySubmit(e) {
+  e.preventDefault();
+  const outlet   = dfOutlet?.value?.trim();
+  const date     = dfDate?.value;
+  const progress = dfProgress?.value?.trim();
+  const issues   = dfIssues?.value?.trim();
+  const tomorrow = dfTomorrow?.value?.trim();
+  const status   = dfStatus?.value || 'open';
+
+  if (!outlet || !date) { showToast('Outlet and date are required.', 'err'); return; }
+
+  const btn = dailyForm.querySelector('[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  try {
+    let photoUrl = null;
+    if (dailyPhotoFile) {
+      photoUrl = await uploadPhoto(dailyPhotoFile, 'daily-photos');
     }
 
-    if (submitBtn) submitBtn.disabled = true;
-
-    const record = {
-        date:             selectedDate,
-        outlet:           d.outlet,
-        engineer_name:    d.engineer_name,
-        issues_found:     d.issues_found     || null,
-        work_completed:   d.work_completed   || null,
-        ongoing_projects: d.ongoing_projects || null,
-        pending_items:    d.pending_items    || null,
-        target_completion: d.target_completion || null,
-        created_by:       user.full_name,
-        user_id:          user.id,
+    const payload = {
+      outlet, date, status,
+      progress_update:    progress  || null,
+      issues_encountered: issues    || null,
+      tomorrow_plan:      tomorrow  || null,
+      ...(photoUrl ? { photo_url: photoUrl } : {}),
     };
 
-    try {
-        if (existingId) {
-            const { error } = await supabase.from('daily_updates').update(record).eq('id', existingId);
-            if (error) { toast(`Error: ${error.message}`, 'err'); return; }
-            toast(`✓ Daily update for ${record.outlet} updated`, 'ok');
-        } else {
-            const { error } = await supabase.from('daily_updates').insert(record);
-            if (error) {
-                if (error.code === '23505') {
-                    toast('Update already exists for this outlet today. Edit the existing update.', 'err');
-                } else {
-                    toast(`Error: ${error.message}`, 'err');
-                }
-                return;
-            }
-            toast(`✓ Daily update for ${record.outlet} submitted`, 'ok');
-            addAuditLog(`Daily update submitted for ${record.outlet} by ${user.full_name}.`, 'create');
-        }
-
-        closeDailyUpdateModal();
-        const fresh = await fetchDailyUpdates(selectedDate);
-        renderDailyUpdatesGrid(fresh);
-    } finally {
-        if (submitBtn) submitBtn.disabled = false;
+    let error;
+    if (editingId) {
+      ({ error } = await supabase
+        .from('daily_engineering_updates')
+        .update(payload)
+        .eq('id', editingId));
+    } else {
+      ({ error } = await supabase
+        .from('daily_engineering_updates')
+        .insert(payload));
     }
+
+    if (error) throw error;
+
+    logAudit(editingId ? 'update-daily' : 'create-daily', `Daily update for ${outlet} on ${date}`);
+    showToast(editingId ? 'Update saved.' : 'Daily update logged.', 'ok');
+    hideDailyForm();
+    await renderDailyGrid();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Update'; }
+  }
 }
 
-// ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
+// ── Mark complete ─────────────────────────────────────────────
+async function markComplete(id) {
+  const { error } = await supabase
+    .from('daily_engineering_updates')
+    .update({ status: 'completed' })
+    .eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'err'); return; }
+  showToast('Marked as completed.', 'ok');
+  await renderDailyGrid();
+}
 
-export function initDailyUpdatesEventListeners() {
-    const submitBtn  = document.getElementById('btn-submit-daily-update');
-    const modal      = document.getElementById('daily-update-modal');
-    const form       = document.getElementById('daily-update-form');
-    const cancelBtn  = document.getElementById('btn-cancel-daily-update');
-    const dateInput  = document.getElementById('daily-update-date');
-    const grid       = document.getElementById('daily-updates-grid');
+// ── Event listeners ───────────────────────────────────────────
+export function initDailyEventListeners() {
+  if (btnAddDaily) btnAddDaily.addEventListener('click', () => showDailyForm());
+  if (btnCancelDaily) btnCancelDaily.addEventListener('click', hideDailyForm);
 
-    // Set today's date on the date picker
-    if (dateInput) {
-        dateInput.value = selectedDate;
-        dateInput.addEventListener('change', async () => {
-            selectedDate = dateInput.value;
-            const fresh = await fetchDailyUpdates(selectedDate);
-            renderDailyUpdatesGrid(fresh);
+  if (btnDailyPrev) btnDailyPrev.addEventListener('click', () => {
+    currentDate = new Date(currentDate.getTime() - 86400000);
+    renderDailyGrid();
+  });
+  if (btnDailyNext) btnDailyNext.addEventListener('click', () => {
+    const nextDay = new Date(currentDate.getTime() + 86400000);
+    if (nextDay <= new Date()) { currentDate = nextDay; renderDailyGrid(); }
+  });
+
+  if (dailyForm) dailyForm.addEventListener('submit', handleDailySubmit);
+
+  // Photo buttons
+  if (dfBtnCamera && dfInpCamera) {
+    dfBtnCamera.addEventListener('click', () => dfInpCamera.click());
+    dfInpCamera.addEventListener('change', e => handleDailyPhotoInput(e.target.files?.[0]));
+  }
+  if (dfBtnGallery && dfInpGallery) {
+    dfBtnGallery.addEventListener('click', () => dfInpGallery.click());
+    dfInpGallery.addEventListener('change', e => handleDailyPhotoInput(e.target.files?.[0]));
+  }
+
+  // Event delegation: edit button & mark-done button on daily cards
+  if (dailyGrid) {
+    dailyGrid.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('[data-daily-edit]');
+      if (editBtn) {
+        showDailyForm({
+          id:       editBtn.dataset.dailyEdit,
+          outlet:   editBtn.dataset.outlet,
+          date:     editBtn.dataset.date,
+          progress: decodeURIComponent(editBtn.dataset.progress),
+          issues:   decodeURIComponent(editBtn.dataset.issues),
+          tomorrow: decodeURIComponent(editBtn.dataset.tomorrow),
+          status:   editBtn.dataset.status,
         });
-    }
-
-    if (submitBtn) submitBtn.addEventListener('click', () => openDailyUpdateModal());
-    if (cancelBtn) cancelBtn.addEventListener('click', closeDailyUpdateModal);
-    if (modal)     modal.addEventListener('click', e => { if (e.target === modal) closeDailyUpdateModal(); });
-    if (form)      form.addEventListener('submit', handleDailyUpdateSubmit);
-
-    // Card button delegation
-    if (grid) {
-        grid.addEventListener('click', e => {
-            const outlet = e.target.dataset.outlet;
-            if (!outlet) return;
-            if (e.target.matches('.btn-submit-outlet-daily')) openDailyUpdateModal(outlet);
-            if (e.target.matches('.btn-edit-daily'))          openDailyUpdateModal(outlet);
-        });
-    }
+        return;
+      }
+      const doneBtn = e.target.closest('[data-daily-complete]');
+      if (doneBtn) await markComplete(doneBtn.dataset.dailyComplete);
+    });
+  }
 }
