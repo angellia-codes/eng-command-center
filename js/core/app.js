@@ -72,16 +72,23 @@ async function initializeApp(userProfile) {
     showPanelLoading(document.getElementById('daily-updates-grid'),   'Loading daily updates…');
 
     // Fetch all data in parallel
-    const [workOrders, auditLogs, assets, schedules, engineeringRequests,
-           inventory, vendors, dailyUpdates] = await Promise.all([
-        fetchWorkOrders(),
-        fetchAuditLogs(),
-        fetchAssets(),
-        fetchMaintenanceSchedules(),
-        fetchInventory(),      // 5.1
-        fetchVendors(),        // 5.2
-        fetchDailyUpdates(),   // 5.3
-    ]);
+    const [
+    workOrders,
+    auditLogs,
+    assets,
+    schedules,
+    inventory,
+    vendors,
+    dailyUpdates
+] = await Promise.all([
+    fetchWorkOrders(),
+    fetchAuditLogs(),
+    fetchAssets(),
+    fetchMaintenanceSchedules(),
+    fetchInventory(),
+    fetchVendors(),
+    fetchDailyUpdates()
+]);
 
     // Render all panels
     renderDashboard(workOrders);
