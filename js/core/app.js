@@ -31,14 +31,7 @@ import { renderAnalytics }                   from '../analytics/analytics.js';
 import { exportWorkOrdersToCSV }             from '../utils/export.js';
 import { initUserManagementEventListeners }  from '../modules/users.js';
 import { fetchOutlets, populateAllOutletSelects } from '../utils/outlets.js';
-import {
-    fetchEngineeringRequests,
-    renderERList,
-    initEngineeringRequestsEventListeners
-} from '../modules/engineering-requests.js';
-import { initCommentsEventListeners }        from '../core/comments.js';
-import { initNotificationBell }              from '../shared/notifications-ui.js';
-import { initReports, initReportEventListeners } from '../analytics/reports.js';
+
 import {
     fetchInventory, renderInventoryList, initInventoryEventListeners  // 5.1
 } from '../modules/inventory.js';
@@ -72,7 +65,6 @@ async function initializeApp(userProfile) {
 
     // Loading states for all panels
     showTableLoading(document.getElementById('wo-tbody'),         7, 'Loading work orders…');
-    showTableLoading(document.getElementById('er-tbody'),         6, 'Loading requests…');
     showTableLoading(document.getElementById('inventory-tbody'),  8, 'Loading inventory…');
     showTableLoading(document.getElementById('vendors-tbody'),    7, 'Loading vendors…');
     showPanelLoading(document.getElementById('pm-list-container'),    'Loading PM schedule…');
@@ -86,7 +78,6 @@ async function initializeApp(userProfile) {
         fetchAuditLogs(),
         fetchAssets(),
         fetchMaintenanceSchedules(),
-        fetchEngineeringRequests(),
         fetchInventory(),      // 5.1
         fetchVendors(),        // 5.2
         fetchDailyUpdates(),   // 5.3
@@ -99,7 +90,6 @@ async function initializeApp(userProfile) {
     renderAssetOptions(assets);
     renderAssetList(assets);
     renderMaintenancePanel(schedules);
-    renderERList(engineeringRequests);
     renderInventoryList(inventory);       // 5.1
     renderVendorList(vendors);            // 5.2
     renderDailyUpdatesGrid(dailyUpdates); // 5.3
@@ -111,7 +101,6 @@ async function initializeApp(userProfile) {
     initAssetEventListeners();
     initMaintenanceEventListeners();
     initUserManagementEventListeners();
-    initEngineeringRequestsEventListeners();
     initCommentsEventListeners();
     initInventoryEventListeners();        // 5.1
     initVendorEventListeners();           // 5.2

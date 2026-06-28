@@ -1,10 +1,10 @@
 // daily.js — Daily Engineering Update Module
 // NGI Engineering Command Center
 
-import { supabase }                    from './supabase.js';
-import { showToast, updateIcons }      from './ui.js';
-import { logAudit }                    from './audit.js';
-import { uploadPhoto }                 from './utils.js';
+import { supabase }                    from '../utils/supabase.js';
+import { showToast, updateIcons }      from '../core/ui.js';
+import { logAudit }                    from '../shared/audit.js';
+import { uploadPhoto }                 from '../utils/utils.js';
 
 // ── DOM refs ─────────────────────────────────────────────────
 const dailyGrid      = document.getElementById('daily-grid');

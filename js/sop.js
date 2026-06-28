@@ -1,9 +1,9 @@
 // sop.js — Engineering SOP Repository Module
 // NGI Engineering Command Center
 
-import { supabase }               from './supabase.js';
-import { showToast, updateIcons } from './ui.js';
-import { logAudit }               from './audit.js';
+import { supabase }               from '../utils/supabase.js';
+import { showToast, updateIcons } from '../core/ui.js';
+import { logAudit }               from '../shared/audit.js';
 
 // ── DOM refs ──────────────────────────────────────────────────
 const sopList        = document.getElementById('sop-list');

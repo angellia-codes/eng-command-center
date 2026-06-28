@@ -1,6 +1,6 @@
 // js/dashboard.js
 
-import { updateIcons } from './core/ui.js';
+import { updateIcons } from '../core/ui.js';
 import { formatIDR, formatIDRCompact, hoursBetween, escapeHtml } from './utils/utils.js';
 
 /**
