@@ -72,7 +72,7 @@ async function initializeApp(userProfile) {
     showPanelLoading(document.getElementById('daily-updates-grid'),   'Loading daily updates…');
 
     // Fetch all data in parallel
-    const [
+   const [
     workOrders,
     auditLogs,
     assets,
@@ -87,7 +87,7 @@ async function initializeApp(userProfile) {
     fetchMaintenanceSchedules(),
     fetchInventory(),
     fetchVendors(),
-    fetchDailyUpdates()
+    fetchDailyUpdates(),
 ]);
 
     // Render all panels
